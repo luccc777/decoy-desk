@@ -35,9 +35,19 @@ class Replay:
         model_file = self.folder / "model.json"
         self._answer: Optional[dict] = (json.loads(model_file.read_text(encoding="utf-8"))
                                         if model_file.is_file() else None)
+        repo = self.folder / "repo"
+        self.repo_dir: Optional[Path] = repo if repo.is_dir() else None
 
     def client(self) -> httpx.AsyncClient:
         return make_client(self.transport)
+
+    def upload(self):
+        """The fixture's file, if it has one (a file/ folder with exactly one file)."""
+        from app.pipeline import Upload
+
+        folder = self.folder / "file"
+        files = sorted(p for p in folder.iterdir() if p.is_file()) if folder.is_dir() else []
+        return Upload(name=files[0].name, data=files[0].read_bytes()) if files else None
 
     @property
     def complete(self) -> Complete:
@@ -49,6 +59,14 @@ class Replay:
             return answer
 
         return recorded
+
+
+def meta(name: str) -> dict:
+    """Title and description for the demo list (meta.json, optional)."""
+    try:
+        return json.loads((FIXTURES / name / "meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
 
 
 def names() -> list[str]:

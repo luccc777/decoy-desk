@@ -299,6 +299,12 @@ checks:
     points: 10
     title: Sets up git hooks that run commands
 
+  S10_runs_downloaded_code:
+    layer: static
+    needs: [[repo, file]]
+    points: 40
+    title: The code downloads something and runs it as code (eval or new Function)
+
   S7_file_type_mismatch:
     layer: static
     needs: [file]

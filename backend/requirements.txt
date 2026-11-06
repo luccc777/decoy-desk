@@ -7,3 +7,5 @@ docker>=7.1
 pyyaml>=6.0
 sse-starlette>=2.1
 tldextract>=5.1
+oletools>=0.60
+python-multipart>=0.0.9
