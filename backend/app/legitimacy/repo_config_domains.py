@@ -85,9 +85,14 @@ def _imitates(domain: str) -> Optional[str]:
     except ImportError:  # the module is optional for this check
         return None
     for api in WELL_KNOWN_APIS:
-        if reason := lookalike_reason(domain, api):
+        reason = lookalike_reason(domain, api)
+        # A brand on another ending is usually the brand itself (stripe.dev, binance.us), so it doesn't count.
+        if reason and not _TLD_SWAP.search(reason):
             return reason
     return None
+
+
+_TLD_SWAP = re.compile(r"\(\.[\w.-]+ instead of \.[\w.-]+\)\s*$")
 
 
 async def repo_config_finding(client: httpx.AsyncClient, files: dict[str, str], now: datetime) -> Finding:

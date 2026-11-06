@@ -58,8 +58,9 @@ class _Feed:
                 continue
             self.shown.add(f.check)
             ev = f.evidence[0] if f.evidence else None
-            self.job.emit(stage, f.title, "warning", data={
-                "check": f.check, "hard": f.hard, "points": f.points,
+            good = f.points < 0  # a sign of a real company, not a red flag
+            self.job.emit(stage, f.title, "info" if good else "warning", data={
+                "check": f.check, "hard": f.hard, "points": f.points, "good": good,
                 "evidence": ev.summary if ev else None, "quote": ev.quote if ev else None})
 
 

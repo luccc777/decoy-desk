@@ -85,6 +85,13 @@ def test_the_model_can_still_raise_a_hard_trigger_with_the_right_words():
     assert by_check(c)["H1_fix_command"].status == "hit"
 
 
+def test_a_negated_quote_is_dropped():
+    # Seen live on a real Stripe-style invitation.
+    text = "Come prepared to discuss it in a live pairing session next week. No need to run anything beforehand."
+    c = claims(text, fake(model_answer(run_locally_or_rushed="No need to run anything beforehand.")))
+    assert by_check(c)["T1_run_locally_or_rushed"].status == "unknown"
+
+
 def test_a_founding_year_the_text_never_states_is_ignored():
     answer = model_answer()
     answer["founded_year"] = 2012  # seen live: the model did "12 years" -> 2012

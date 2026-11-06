@@ -69,3 +69,17 @@ def test_no_outside_domains_is_clear():
 
 def test_no_answers_is_unknown():
     assert run(TRAP, {}).status == "unknown"
+
+
+def test_a_brand_on_another_ending_is_not_an_imitation():
+    # Seen live: Stripe's own sample README links stripe.dev and stripe.global.
+    files = {"README.md": "Docs at https://stripe.dev/blog and https://stripe.global"}
+    f = run(files, {"stripe.dev": "2015-01-01T00:00:00Z", "stripe.global": "2016-01-01T00:00:00Z"})
+    assert f.status == "clear"
+
+
+def test_a_misspelled_api_is_an_imitation():
+    files = {".env": "RPC=https://mainnet.lnfura.io/v3/key"}
+    f = run(files, {"lnfura.io": "2015-01-01T00:00:00Z"})
+    assert f.status == "hit"
+    assert "infura.io" in f.evidence[0].summary
