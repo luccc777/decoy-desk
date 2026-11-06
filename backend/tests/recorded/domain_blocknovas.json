@@ -1,0 +1,41 @@
+{
+ "recorded_at": "2026-11-06T02:18:28Z",
+ "responses": {
+  "GET https://cloudflare-dns.com/dns-query?name=_dmarc.blocknovas.com&type=TXT": {
+   "status": 200,
+   "content_type": "application/dns-json",
+   "location": null,
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"_dmarc.blocknovas.com\",\"type\":16}],\"Authority\":[{\"name\":\"blocknovas.com\",\"type\":6,\"TTL\":1800,\"data\":\"ns1.fbi.seized.gov. dns.cloudflare.com. 2417434446 10000 2400 604800 1800\"}]}"
+  },
+  "GET https://cloudflare-dns.com/dns-query?name=blocknovas.com&type=MX": {
+   "status": 200,
+   "content_type": "application/dns-json",
+   "location": null,
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"blocknovas.com\",\"type\":15}],\"Authority\":[{\"name\":\"blocknovas.com\",\"type\":6,\"TTL\":1800,\"data\":\"ns1.fbi.seized.gov. dns.cloudflare.com. 2417434446 10000 2400 604800 1800\"}]}"
+  },
+  "GET https://cloudflare-dns.com/dns-query?name=blocknovas.com&type=TXT": {
+   "status": 200,
+   "content_type": "application/dns-json",
+   "location": null,
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"blocknovas.com\",\"type\":16}],\"Authority\":[{\"name\":\"blocknovas.com\",\"type\":6,\"TTL\":1800,\"data\":\"ns1.fbi.seized.gov. dns.cloudflare.com. 2417434446 10000 2400 604800 1800\"}]}"
+  },
+  "GET https://rdap.org/domain/blocknovas.com": {
+   "status": 302,
+   "content_type": "text/html",
+   "location": "https://rdap.verisign.com/com/v1/domain/blocknovas.com",
+   "body": ""
+  },
+  "GET https://rdap.verisign.com/com/v1/domain/blocknovas.com": {
+   "status": 200,
+   "content_type": "application/rdap+json",
+   "location": null,
+   "body": "{\"objectClassName\":\"domain\",\"handle\":\"2899605022_DOMAIN_COM-VRSN\",\"ldhName\":\"BLOCKNOVAS.COM\",\"links\":[{\"value\":\"https:\\/\\/rdap.verisign.com\\/com\\/v1\\/domain\\/blocknovas.com\",\"rel\":\"self\",\"href\":\"https:\\/\\/rdap.verisign.com\\/com\\/v1\\/domain\\/blocknovas.com\",\"type\":\"application\\/rdap+json\"},{\"value\":\"https:\\/\\/rdap.verisign.com\\/com\\/v1\\/domain\\/blocknovas.com\",\"rel\":\"related\",\"href\":\"https:\\/\\/rdap.cloudflare.com\\/rdap\\/v1\\/domain\\/BLOCKNOVAS.COM\",\"type\":\"application\\/rdap+json\"}],\"status\":[\"client transfer prohibited\",\"server delete prohibited\",\"server transfer prohibited\",\"server update prohibited\"],\"entities\":[{\"objectClassName\":\"entity\",\"handle\":\"1910\",\"roles\":[\"registrar\"],\"links\":[{\"href\":\"http:\\/\\/www.cloudflare.com\",\"type\":\"text\\/html\",\"value\":\"https:\\/\\/rdap.cloudflare.com\\/rdap\\/v1\\/\",\"rel\":\"about\"}],\"publicIds\":[{\"type\":\"IANA Registrar ID\",\"identifier\":\"1910\"}],\"vcardArray\":[\"vcard\",[[\"version\",{},\"text\",\"4.0\"],[\"fn\",{},\"text\",\"Cloudflare, Inc.\"]]],\"entities\":[{\"objectClassName\":\"entity\",\"roles\":[\"abuse\"],\"vcardArray\":[\"vcard\",[[\"version\",{},\"text\",\"4.0\"],[\"fn\",{},\"text\",\"\"],[\"tel\",{\"type\":\"voice\"},\"uri\",\"tel:+1.6503198930\"],[\"email\",{},\"text\",\"registrar-abuse@cloudflare.com\"]]]}]}],\"events\":[{\"eventAction\":\"registration\",\"eventDate\":\"2024-07-16T01:48:55Z\"},{\"eventAction\":\"expiration\",\"eventDate\":\"2027-07-16T01:48:55Z\"},{\"eventAction\":\"last changed\",\"eventDate\":\"2026-07-16T08:56:03Z\"},{\"eventAction\":\"last update of RDAP database\",\"eventDate\":\"2026-11-06T02:18:03Z\"}],\"secureDNS\":{\"delegationSigned\":false},\"nameservers\":[{\"objectClassName\":\"nameserver\",\"ldhName\":\"NS1.FBI.SEIZED.GOV\"},{\"objectClassName\":\"nameserver\",\"ldhName\":\"NS2.FBI.SEIZED.GOV\"}],\"rdapConformance\":[\"rdap_level_0\",\"icann_rdap_technical_implementation_guide_1\",\"icann_rdap_response_profile_1\"],\"notices\":[{\"title\":\"Terms of Service\",\"description\":[\"Service subject to Terms of Use.\"],\"links\":[{\"href\":\"https:\\/\\/www.verisign.com\\/domain-names\\/registration-data-access-protocol\\/terms-service\\/index.xhtml\",\"type\":\"text\\/html\",\"value\":\"https:\\/\\/rdap.verisign.com\\/com\\/v1\\/domain\\/blocknovas.com\",\"rel\":\"terms-of-service\"}]},{\"title\":\"Status Codes\",\"description\":[\"For more information on domain status codes, please visit https:\\/\\/icann.org\\/epp\"],\"links\":[{\"href\":\"https:\\/\\/icann.org\\/epp\",\"type\":\"text\\/html\",\"value\":\"https:\\/\\/rdap.verisign.com\\/com\\/v1\\/domain\\/blocknovas.com\",\"rel\":\"glossary\"}]},{\"title\":\"RDDS Inaccuracy Complaint Form\",\"description\":[\"URL of the ICANN RDDS Inaccuracy Complaint Form: https:\\/\\/icann.org\\/wicf\"],\"links\":[{\"href\":\"https:\\/\\/icann.org\\/wicf\",\"type\":\"text\\/html\",\"value\":\"https:\\/\\/rdap.verisign.com\\/com\\/v1\\/domain\\/blocknovas.com\",\"rel\":\"help\"}]}]}"
+  },
+  "GET https://web.archive.org/cdx/search/cdx?fl=timestamp&limit=1&output=json&url=blocknovas.com": {
+   "status": 200,
+   "content_type": "application/json",
+   "location": null,
+   "body": "[[\"timestamp\"],\n[\"20240719032725\"]]\n"
+  }
+ }
+}

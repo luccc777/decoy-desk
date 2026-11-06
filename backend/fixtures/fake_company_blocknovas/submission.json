@@ -1,0 +1,4 @@
+{
+  "company_name": "BlockNovas",
+  "conversation": "Hi! I'm Emily Carter, Project Director at BlockNovas LLC (blocknovas.com). We have been building blockchain and fintech products for over 12 years, and we're hiring a Senior Full Stack Developer (React, Node.js, Web3).\n\nYour profile is a great fit. The next step is a short technical assessment: please clone our repo, run npm install and npm run dev, and fix the bug on the wallet page. It takes about an hour, so please finish it before our call tomorrow. If possible, use your work laptop so the environment matches ours.\n\nYou can reach me at emily.carter@blocknovas.com or on Telegram @emily_bn."
+}

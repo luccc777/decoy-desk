@@ -1,0 +1,35 @@
+{
+ "recorded_at": "2026-11-06T02:18:44Z",
+ "responses": {
+  "GET https://cloudflare-dns.com/dns-query?name=_dmarc.softglide.co&type=TXT": {
+   "status": 200,
+   "content_type": "application/dns-json",
+   "location": null,
+   "body": "{\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"_dmarc.softglide.co\",\"type\":16}],\"Authority\":[{\"name\":\"co\",\"type\":6,\"TTL\":900,\"data\":\"ns0.centralnic.net. hostmaster.centralnic.net. 1759797435 900 1800 6048000 3600\"}]}"
+  },
+  "GET https://cloudflare-dns.com/dns-query?name=softglide.co&type=MX": {
+   "status": 200,
+   "content_type": "application/dns-json",
+   "location": null,
+   "body": "{\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"softglide.co\",\"type\":15}],\"Authority\":[{\"name\":\"co\",\"type\":6,\"TTL\":900,\"data\":\"ns0.centralnic.net. hostmaster.centralnic.net. 1759797435 900 1800 6048000 3600\"}]}"
+  },
+  "GET https://cloudflare-dns.com/dns-query?name=softglide.co&type=TXT": {
+   "status": 200,
+   "content_type": "application/dns-json",
+   "location": null,
+   "body": "{\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"softglide.co\",\"type\":16}],\"Authority\":[{\"name\":\"co\",\"type\":6,\"TTL\":900,\"data\":\"ns0.centralnic.net. hostmaster.centralnic.net. 1759797435 900 1800 6048000 3600\"}]}"
+  },
+  "GET https://rdap.org/domain/softglide.co": {
+   "status": 404,
+   "content_type": "application/rdap+json",
+   "location": null,
+   "body": "{\"rdapConformance\":[\"rdap_level_0\"],\"lang\":\"en\",\"errorCode\":404,\"title\":\"No RDAP service is available for this resource\"}"
+  },
+  "GET https://web.archive.org/cdx/search/cdx?fl=timestamp&limit=1&output=json&url=softglide.co": {
+   "status": 200,
+   "content_type": "application/json",
+   "location": null,
+   "body": "[[\"timestamp\"],\n[\"20240918184031\"]]\n"
+  }
+ }
+}

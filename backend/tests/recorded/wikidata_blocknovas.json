@@ -1,0 +1,11 @@
+{
+ "recorded_at": "2026-11-06T02:27:13Z",
+ "responses": {
+  "GET https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&limit=5&search=BlockNovas&type=item": {
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "location": null,
+   "body": "{\"searchinfo\":{\"search\":\"BlockNovas\"},\"search\":[],\"success\":1}"
+  }
+ }
+}

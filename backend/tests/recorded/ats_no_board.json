@@ -1,0 +1,29 @@
+{
+ "recorded_at": "2026-11-06T02:27:26Z",
+ "responses": {
+  "GET https://api.ashbyhq.com/posting-api/job-board/blocknovas": {
+   "status": 404,
+   "content_type": "text/plain; charset=utf-8",
+   "location": null,
+   "body": "Not Found"
+  },
+  "GET https://api.ashbyhq.com/posting-api/job-board/blocknovas.com": {
+   "status": 404,
+   "content_type": "text/plain; charset=utf-8",
+   "location": null,
+   "body": "Not Found"
+  },
+  "GET https://api.lever.co/v0/postings/blocknovas?mode=json": {
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "location": null,
+   "body": "{\"ok\":false,\"error\":\"Document not found\"}"
+  },
+  "GET https://boards-api.greenhouse.io/v1/boards/blocknovas/jobs": {
+   "status": 404,
+   "content_type": "application/json",
+   "location": null,
+   "body": "{\"status\":404,\"error\":\"Job not found\"}"
+  }
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "recorded_at": "2026-11-06T02:24:03Z",
+ "responses": {
+  "GET https://api.github.com/orgs/quorvex-analytics": {
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "location": null,
+   "body": "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/orgs/orgs#get-an-organization\",\"status\":\"404\"}"
+  },
+  "GET https://api.github.com/orgs/quorvexanalytics": {
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "location": null,
+   "body": "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/orgs/orgs#get-an-organization\",\"status\":\"404\"}"
+  },
+  "GET https://api.github.com/users/quorvex-recruiter-zz9": {
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "location": null,
+   "body": "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest\",\"status\":\"404\"}"
+  }
+ }
+}
