@@ -1,0 +1,38 @@
+{
+ "company_name": "BlockNovas LLC",
+ "company_website": "blocknovas.com",
+ "job_title": "Senior Full Stack Developer (React, Node.js, Web3)",
+ "founded_year": null,
+ "years_in_business": 12,
+ "age_quote": "We have been building blockchain and fintech products for over 12 years",
+ "signals": {
+  "fix_command": {
+   "present": true,
+   "quote": "please clone our repo, run npm install and npm run dev, and fix the bug on the wallet page"
+  },
+  "pay_to_work": {
+   "present": false,
+   "quote": ""
+  },
+  "run_locally_or_rushed": {
+   "present": true,
+   "quote": "please finish it before our call tomorrow"
+  },
+  "platform_or_role_hop": {
+   "present": true,
+   "quote": "on Telegram @emily_bn"
+  },
+  "work_computer_or_admin": {
+   "present": true,
+   "quote": "If possible, use your work laptop so the environment matches ours."
+  },
+  "too_good_to_be_true": {
+   "present": false,
+   "quote": ""
+  },
+  "known_contact_new_venture": {
+   "present": false,
+   "quote": ""
+  }
+ }
+}
