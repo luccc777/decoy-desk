@@ -1,0 +1,16 @@
+{$DOMAIN} {
+	encode zstd gzip
+
+	handle /api/* {
+		# flush_interval -1 keeps server-sent events (live job progress) unbuffered
+		reverse_proxy api:8000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /srv/www
+		try_files {path} {path}.html {path}/index.html /index.html
+		file_server
+	}
+}

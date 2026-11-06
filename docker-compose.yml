@@ -1,0 +1,31 @@
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/out:/srv/www:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "8000"
+    volumes:
+      # The API is the only component with Docker access: it creates and destroys the sandboxes.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/decoy-desk:/srv/decoy-desk
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}
