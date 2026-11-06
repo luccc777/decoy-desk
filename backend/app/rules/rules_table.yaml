@@ -1,0 +1,364 @@
+# Decoy Desk rules table.
+#
+# This file and engine.py are the only things that decide the verdict color.
+# The language model may extract claims from a conversation (every quote is
+# checked against the original text in code) and explain the result, but it
+# never edits a weight and never picks the color.
+#
+# Each check is a yes/no question about the submission. A collector answers it:
+#   hit      the risky condition is true
+#   clear    it was checked and is false
+#   unknown  it could not be checked (an error never counts as clear)
+#
+# Fields:
+#   layer            sender | static | decoy
+#   title            the line the evidence card shows when the check fires
+#   needs            inputs the user must submit for the check to apply;
+#                    a nested list means "any one of these"
+#   hard             true: a hit makes the verdict red on its own
+#   points           added to the score on a hit; negative points lower risk
+#   bands            [[below, points], ...] for numeric checks such as domain
+#                    age in days: the first band whose limit is above the
+#                    value applies, and a value past every band is clear
+#   only_if_unknown  the check applies only while that other check is unknown
+#   enabled          false keeps a check documented but out of the verdict
+#
+# The weights are starting points taken from 31 real attacks, from the
+# BlockNovas fake recruiter to the Binance work-computer case. They are not
+# calibrated against a labelled dataset yet.
+
+version: 1
+
+thresholds:
+  red: 50           # score at or above this is red
+  yellow: 20        # score at or above this is yellow
+  min_coverage: 0.6 # below this share of answered checks, green becomes yellow
+
+max_negative_points: 20  # risk-lowering points are capped at -20 in total
+
+messages:
+  red: Stop. Don't open or run this on your computer.
+  yellow: We couldn't confirm this is safe. Check with the company through its official channel before you run anything.
+  green: No red flags found. That isn't a guarantee, so if you run it, run it here first.
+
+checks:
+
+  # ---------------------------------------------------------------- sender
+  # Who sent it. Hard triggers first.
+
+  H1_fix_command:
+    layer: sender
+    needs: [conversation]
+    hard: true
+    title: Asked you to run a command or install an update to fix your camera, mic or meeting
+
+  H2_fake_meeting_link:
+    layer: sender
+    needs: [[conversation, meeting_link]]
+    hard: true
+    title: The meeting link uses a Zoom, Teams, Meet or Webex name on a host those companies don't own
+
+  H3_lookalike_domain:
+    layer: sender
+    needs: [company]
+    hard: true
+    title: A link or email uses a lookalike of the company's real domain
+
+  H4_domain_seized_or_listed:
+    layer: sender
+    needs: [company]
+    hard: true
+    title: A domain involved is on a threat list or was seized by law enforcement
+
+  H5_pay_to_work:
+    layer: sender
+    needs: [conversation]
+    hard: true
+    title: Asked you to pay, send crypto or buy equipment to get or keep the job
+
+  H6_dmarc_fail:
+    layer: sender
+    needs: [email_headers]
+    hard: true
+    title: The email failed DMARC for the company's own domain, so the sender was spoofed
+
+  # The company.
+
+  C1_claimed_age_contradiction:
+    layer: sender
+    needs: [company]
+    points: 25
+    title: The company claims to be much older than its domain, archive and certificate records show
+
+  C2_domain_age:
+    layer: sender
+    needs: [company]
+    bands: [[30, 20], [180, 12], [730, 5]]
+    title: The company's website domain is new
+
+  C3_first_archive_capture_recent:
+    layer: sender
+    needs: [company]
+    only_if_unknown: C2_domain_age
+    bands: [[180, 8]]
+    title: The web archive first saw the company's site only recently
+
+  C4_off_official_domain:
+    layer: sender
+    needs: [company]
+    points: 25
+    title: The recruiter's domain isn't the company's official domain
+
+  C5_job_not_on_official_board:
+    layer: sender
+    needs: [company, job]
+    points: 15
+    title: The job isn't listed on the company's official careers board
+
+  C5_job_on_official_board:
+    layer: sender
+    needs: [company, job]
+    points: -10
+    title: The job is listed on the company's official careers board
+
+  C6_not_in_registry:
+    layer: sender
+    needs: [company]
+    points: 5
+    enabled: false
+    title: The company says it is incorporated but no business registry we can reach lists it
+
+  C7_virtual_office_only:
+    layer: sender
+    needs: [company]
+    points: 5
+    enabled: false
+    title: The registered address is only a registered-agent or virtual-office address
+
+  C8_no_mx:
+    layer: sender
+    needs: [company]
+    points: 8
+    title: The company's domain can't receive email (no MX record)
+
+  C8_no_spf:
+    layer: sender
+    needs: [company]
+    points: 2
+    title: The company's domain has no SPF record
+
+  C8_no_dmarc:
+    layer: sender
+    needs: [company]
+    points: 2
+    title: The company's domain has no DMARC record
+
+  C9_assessment_only_github_org:
+    layer: sender
+    needs: [company]
+    points: 10
+    title: The company's GitHub org holds only test repos, or is much younger than the company claims to be
+
+  C9_verified_github_org:
+    layer: sender
+    needs: [company]
+    points: -5
+    title: The company's GitHub org is verified for its official domain
+
+  # The person and the channel.
+
+  P1_free_webmail:
+    layer: sender
+    needs: [contact_email]
+    points: 10
+    title: The contact uses a free webmail address while claiming a company role
+
+  P2_email_off_official_domain:
+    layer: sender
+    needs: [contact_email, company]
+    points: 12
+    title: The contact's email domain isn't the company's official domain
+
+  P3_dmarc_aligned_pass:
+    layer: sender
+    needs: [email_headers]
+    points: -10
+    title: The email passed DMARC for the company's official domain
+
+  P4_linkedin_profile_new:
+    layer: sender
+    needs: [linkedin_answers]
+    points: 8
+    title: The contact's LinkedIn profile is less than 6 months old
+
+  P4_linkedin_unverified:
+    layer: sender
+    needs: [linkedin_answers]
+    points: 3
+    title: The contact's LinkedIn profile has no verification of any kind
+
+  P4_linkedin_workplace_verified:
+    layer: sender
+    needs: [linkedin_answers]
+    points: -8
+    title: The contact's LinkedIn profile is verified as working at this company
+
+  P5_github_account_age:
+    layer: sender
+    needs: [github_handle]
+    bands: [[90, 10], [365, 4]]
+    title: The GitHub account that shared the repo is new
+
+  P6_repo_on_personal_account:
+    layer: sender
+    needs: [repo]
+    points: 8
+    title: The repo belongs to a personal account, not the company's org
+
+  P7_repo_new_or_copied:
+    layer: sender
+    needs: [repo]
+    points: 8
+    title: The repo was created in the last 14 days or is a near copy of an open-source project
+
+  P8_new_domains_in_repo_config:
+    layer: sender
+    needs: [repo]
+    points: 20
+    title: The repo's config calls domains that are less than 30 days old or imitate well-known APIs
+
+  # The conversation. A model extracts these with verbatim quotes; the code
+  # drops any quote that isn't in the original text.
+
+  T1_run_locally_or_rushed:
+    layer: sender
+    needs: [conversation]
+    points: 15
+    title: Asked you to run the project on your own machine before a live interview, or under time pressure
+
+  T2_platform_or_role_hop:
+    layer: sender
+    needs: [conversation]
+    points: 8
+    title: The talk moved to Telegram, WhatsApp or another chat app, or a "CEO" took over from the recruiter
+
+  T3_work_computer_or_admin:
+    layer: sender
+    needs: [conversation]
+    points: 20
+    title: Asked you to use your work computer, turn off antivirus or run as admin
+
+  T4_too_good_to_be_true:
+    layer: sender
+    needs: [conversation]
+    points: 5
+    title: Pay or seniority far above the market, or steps skipped ("no interview, just the test")
+
+  T5_known_contact_new_venture:
+    layer: sender
+    needs: [conversation]
+    points: 10
+    title: Someone you know showed up on a new channel with a new venture and a file to review
+
+  # ---------------------------------------------------------------- static
+  # What the repo or file contains, read without running anything.
+
+  S1_runs_on_folder_open:
+    layer: static
+    needs: [repo]
+    points: 30
+    title: Opening the folder in VS Code runs a task automatically
+
+  S2_install_script:
+    layer: static
+    needs: [repo]
+    points: 10
+    title: Installing the project runs a script (preinstall, install, postinstall or prepare)
+
+  S3_install_fetches_remote_code:
+    layer: static
+    needs: [repo]
+    hard: true
+    title: An install script downloads code from the internet and runs it
+
+  S4_obfuscated_code:
+    layer: static
+    needs: [[repo, file]]
+    points: 20
+    title: Contains obfuscated code
+
+  S5_hidden_urls:
+    layer: static
+    needs: [[repo, file]]
+    points: 15
+    title: Hides web addresses inside encoded strings
+
+  S6_git_hooks:
+    layer: static
+    needs: [repo]
+    points: 10
+    title: Sets up git hooks that run commands
+
+  S7_file_type_mismatch:
+    layer: static
+    needs: [file]
+    hard: true
+    title: The file is a program or script disguised as a document
+
+  S8_office_autorun_macro:
+    layer: static
+    needs: [file]
+    hard: true
+    title: The document has macros that run when it opens
+
+  S9_archive_hides_executable:
+    layer: static
+    needs: [file]
+    points: 25
+    title: The archive contains programs or scripts
+
+  # ---------------------------------------------------------------- decoy
+  # What it did on the decoy machine (gVisor, no real secrets, watched from
+  # outside the sandbox).
+
+  D1_decoy_secret_read:
+    layer: decoy
+    needs: [detonation]
+    hard: true
+    title: Read the decoy SSH keys, cloud credentials or crypto wallet
+
+  D2_canary_left_the_box:
+    layer: decoy
+    needs: [detonation]
+    hard: true
+    title: Tried to send a decoy secret out of the machine
+
+  D3_toolchain_tampered:
+    layer: decoy
+    needs: [detonation]
+    hard: true
+    title: Replaced or changed a tool on the system, like the fake pyenv in the Binance attack
+
+  D4_download_and_execute:
+    layer: decoy
+    needs: [detonation]
+    hard: true
+    title: Downloaded code from the internet and ran it
+
+  D5_persistence:
+    layer: decoy
+    needs: [detonation]
+    hard: true
+    title: Set itself up to run again at every login (shell profile, cron or autostart)
+
+  D6_blocked_destination:
+    layer: decoy
+    needs: [detonation]
+    points: 30
+    title: Tried to reach a server outside the package registries
+
+  D7_resource_abuse:
+    layer: decoy
+    needs: [detonation]
+    points: 20
+    title: Hit the CPU, memory or process limits, the way a crypto miner or fork bomb does
