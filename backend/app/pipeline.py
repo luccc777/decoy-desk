@@ -21,6 +21,7 @@ from app.legitimacy.common import clear, utcnow, unknown
 from app.legitimacy.http import FetchError
 from app.legitimacy.repo_config_domains import repo_config_finding
 from app.rules.engine import Finding, RulesTable, decide, load_table
+from app.rules.explain import explain
 from app.schemas import Submission
 from app.static_scan.fetch import download_repo
 from app.static_scan.file_scan import detect_type, scan_file
@@ -147,4 +148,7 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
     result["verdict"] = verdict.model_dump()
     job.emit("verdict", verdict.message, "done", data={"color": verdict.color, "score": verdict.score,
                                                        "reason": verdict.reason})
+    # The color is final above; the explanation only puts it in plain words and never fails the check.
+    # Demos pass their recorded answer, which doesn't fit this schema, so they get the template.
+    result["explanation"] = (await explain(verdict, complete=complete)).model_dump()
     return result

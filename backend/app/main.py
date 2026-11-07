@@ -21,7 +21,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 
-from app import fixtures
+from app import fixtures, receipts
 from app.jobs import JOBS_DIR, JobStore
 from app.legitimacy.http import make_client
 from app.pipeline import MAX_UPLOAD_BYTES, Upload, run_check
@@ -66,13 +66,28 @@ def _title(sub: Submission, upload: Upload | None) -> str:
             or (sub.conversation or "")[:60] or "Check")
 
 
+def with_receipt(run):
+    """Runs a check and, when RECEIPTS_FILE is set, adds its verdict to the hash chain."""
+    async def wrapped(job):
+        result = await run(job)
+        path = receipts.receipts_path()
+        if path and isinstance(result, dict) and result.get("verdict"):
+            try:
+                r = receipts.append(path, job_id=job.id, at=str(job.created_at), verdict=result["verdict"])
+                result["receipt"] = {"hash": r["hash"], "prev": r["prev"]}
+            except OSError:
+                pass  # a missing receipt never costs the user their verdict
+        return result
+    return wrapped
+
+
 def _start(request: Request, sub: Submission, upload: Upload | None = None) -> dict:
     jobs: JobStore = request.app.state.jobs
     client = request.app.state.client
     inputs = sub.inputs() | ({"file"} if upload else set())
     token = os.environ.get("GITHUB_TOKEN") or None
     job = jobs.start("check", _title(sub, upload), inputs,
-                     lambda j: run_check(j, sub, client=client, upload=upload, github_token=token))
+                     with_receipt(lambda j: run_check(j, sub, client=client, upload=upload, github_token=token)))
     return {"id": job.id}
 
 
@@ -150,5 +165,22 @@ async def run_demo(name: str, request: Request) -> dict:
             return await run_check(job, sub, client=client, now=replay.now, complete=replay.complete,
                                    upload=upload, repo_dir=replay.repo_dir)
 
-    job = request.app.state.jobs.start("demo", fixtures.meta(name).get("title", name), inputs, run)
+    job = request.app.state.jobs.start("demo", fixtures.meta(name).get("title", name), inputs, with_receipt(run))
     return {"id": job.id}
+
+
+@app.get("/api/receipts/verify")
+def verify_receipts() -> dict:
+    path = receipts.receipts_path()
+    if path is None:
+        raise HTTPException(404, "Receipts are off on this server.")
+    return receipts.verify(path)
+
+
+@app.get("/api/receipts/{job_id}")
+def get_receipt(job_id: str) -> dict:
+    path = receipts.receipts_path()
+    receipt = receipts.find(path, job_id) if path else None
+    if receipt is None:
+        raise HTTPException(404, "No receipt for this check.")
+    return receipt
