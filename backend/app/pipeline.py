@@ -150,5 +150,5 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
                                                        "reason": verdict.reason})
     # The color is final above; the explanation only puts it in plain words and never fails the check.
     # Demos pass their recorded answer, which doesn't fit this schema, so they get the template.
-    result["explanation"] = (await explain(verdict, complete=complete)).model_dump()
+    result["explanation"] = (await explain(verdict, complete=complete, checked=inputs)).model_dump()
     return result

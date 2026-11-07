@@ -45,6 +45,17 @@ def test_a_good_answer_is_used():
     assert e.source == "model" and e.headline.startswith("This company")
 
 
+def test_the_model_is_told_what_was_checked():
+    seen = {}
+
+    async def complete(**kwargs):
+        seen["user"] = kwargs["user"]
+        return answer()
+
+    asyncio.run(explain(verdict(), complete=complete, checked={"conversation", "company", "unknown_kind"}))
+    assert '"what_was_checked": ["the company", "the conversation"]' in seen["user"]
+
+
 def test_the_facts_carry_the_evidence_and_the_quote():
     lines = facts(verdict())
     assert lines[0].startswith("[STOP rule] The domain was seized")
