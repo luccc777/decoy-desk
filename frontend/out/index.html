@@ -1,0 +1,168 @@
+<!doctype html>
+<!-- COPIE PARA: decoy-desk/frontend/out/index.html  (o Caddy já serve essa pasta em "/").
+     Tela completa sem build: demos, formulário, progresso ao vivo (SSE) e cartão do veredito.
+     Abra https://45-77-209-163.sslip.io/  ·  reabrir um job: /?id=ID -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decoy Desk</title>
+<style>
+  :root { --bg:#0b1020; --card:#131a2e; --line:#26304d; --text:#e6e9f2; --muted:#9aa4bf;
+          --red:#ef4444; --yellow:#f59e0b; --green:#22c55e; --blue:#60a5fa; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, Segoe UI, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0; font-size: 28px; } .tag { color: var(--muted); margin: 4px 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 14px 0; }
+  label { display:block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  input, textarea { width:100%; background:#0e1426; color:var(--text); border:1px solid var(--line);
+                    border-radius: 8px; padding: 9px; font: inherit; }
+  textarea { min-height: 120px; }
+  .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+  button { background: var(--blue); color:#06101f; border:0; border-radius: 8px; padding: 10px 16px;
+           font-weight: 600; cursor: pointer; margin: 12px 8px 0 0; }
+  button.ghost { background: transparent; color: var(--text); border:1px solid var(--line); }
+  button:disabled { opacity: .5; cursor: wait; }
+  #feed div { padding: 6px 8px; border-left: 3px solid var(--line); margin: 4px 0; font-size: 14px; }
+  #feed .warning { border-color: var(--red); } #feed .good { border-color: var(--green); }
+  #feed .done { border-color: var(--blue); } #feed .error { border-color: var(--yellow); }
+  #feed small, .muted { color: var(--muted); }
+  .verdict { border-width: 2px; } .verdict h2 { margin: 0 0 6px; font-size: 26px; }
+  .red { border-color: var(--red) !important; } .red h2 { color: var(--red); }
+  .yellow { border-color: var(--yellow) !important; } .yellow h2 { color: var(--yellow); }
+  .green { border-color: var(--green) !important; } .green h2 { color: var(--green); }
+  .flag { border-top: 1px solid var(--line); padding: 8px 0; }
+  .pts { float: right; font-weight: 700; } q { color: #fcd34d; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🪤 Decoy Desk</h1>
+  <p class="tag">Before you run what a stranger sent you, send it to Decoy Desk.</p>
+
+  <div class="card">
+    <strong>Try a recorded case</strong> <span class="muted">(replays real answers, takes a second)</span>
+    <div id="demos"></div>
+  </div>
+
+  <form id="form" class="card">
+    <strong>Check your own</strong>
+    <label>The conversation (paste the recruiter's messages)</label>
+    <textarea name="conversation" placeholder="Hi! I'm Emily from ..."></textarea>
+    <div class="row">
+      <div><label>Company name</label><input name="company_name" placeholder="BlockNovas"></div>
+      <div><label>Repo link</label><input name="repo_url" placeholder="https://github.com/owner/repo"></div>
+      <div><label>Recruiter's email</label><input name="contact_email" placeholder="emily@company.com"></div>
+      <div><label>A file they sent (optional, up to 25 MB)</label><input name="file" type="file"></div>
+    </div>
+    <button id="go" type="submit">Check it</button>
+    <span class="muted">Nothing you send is run on your computer.</span>
+  </form>
+
+  <div id="live" class="card hidden"><strong id="title">Checking…</strong><div id="feed"></div></div>
+  <div id="verdict" class="card verdict hidden"></div>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LABEL = { red: "Red: don't run it", yellow: "Yellow: confirm first", green: "Green: no red flags" };
+
+async function api(path, opts) {
+  const r = await fetch("/api" + path, opts);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.json();
+}
+
+async function loadDemos() {
+  const demos = await api("/demos").catch(() => []);
+  $("#demos").innerHTML = demos.map((d) =>
+    `<button class="ghost" data-demo="${esc(d.name)}" title="${esc(d.description)}">${esc(d.title)}</button>`).join("")
+    || '<span class="muted">No demos available.</span>';
+  document.querySelectorAll("[data-demo]").forEach((b) => b.onclick = async () => {
+    const { id } = await api("/demos/" + b.dataset.demo, { method: "POST" });
+    follow(id, b.textContent);
+  });
+}
+
+$("#form").onsubmit = async (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target), sub = {};
+  for (const k of ["conversation", "company_name", "repo_url", "contact_email"]) {
+    const v = (f.get(k) || "").trim(); if (v) sub[k] = v;
+  }
+  const file = f.get("file");
+  $("#go").disabled = true;
+  try {
+    let res;
+    if (file && file.size) {
+      const body = new FormData(); body.append("file", file); body.append("submission", JSON.stringify(sub));
+      res = await api("/checks/upload", { method: "POST", body });
+    } else {
+      res = await api("/checks", { method: "POST", headers: { "Content-Type": "application/json" },
+                                   body: JSON.stringify(sub) });
+    }
+    follow(res.id, sub.repo_url || sub.company_name || (file && file.name) || "Your check");
+  } catch (err) { alertBox(err.message); }
+  finally { $("#go").disabled = false; }
+};
+
+function alertBox(msg) {
+  $("#live").classList.remove("hidden");
+  $("#feed").innerHTML = `<div class="error">⚠ ${esc(msg)}</div>`;
+}
+
+function follow(id, title) {
+  history.replaceState(null, "", "?id=" + id);
+  $("#live").classList.remove("hidden"); $("#verdict").classList.add("hidden");
+  $("#title").textContent = "Checking: " + title; $("#feed").innerHTML = "";
+  const es = new EventSource(`/api/checks/${id}/events`);
+  es.addEventListener("progress", (m) => addEvent(JSON.parse(m.data)));
+  es.addEventListener("end", async () => { es.close(); showVerdict(await api("/checks/" + id)); });
+  es.onerror = async () => {  // connection dropped: fall back to the saved state
+    es.close();
+    const snap = await api("/checks/" + id).catch(() => null);
+    if (snap && ["done", "failed"].includes(snap.state)) showVerdict(snap);
+  };
+}
+
+function addEvent(ev) {
+  const d = ev.data || {}, good = d.good, cls = good ? "good" : ev.status;
+  const icon = good ? "✅" : ev.status === "warning" ? (d.hard ? "⛔" : "🚩") : ev.status === "done" ? "✔" : "•";
+  const pts = d.points ? ` <small>(${d.points > 0 ? "+" : ""}${d.points})</small>` : "";
+  const extra = d.evidence ? `<br><small>${esc(d.evidence)}</small>` : "";
+  const quote = d.quote ? `<br><small><q>${esc(d.quote)}</q></small>` : "";
+  $("#feed").insertAdjacentHTML("beforeend",
+    `<div class="${esc(cls)}">${icon} <small>[${esc(ev.stage)}]</small> ${esc(ev.message)}${pts}${extra}${quote}</div>`);
+}
+
+function showVerdict(snap) {
+  const box = $("#verdict"); box.classList.remove("hidden", "red", "yellow", "green");
+  const v = snap.result && snap.result.verdict;
+  if (!v) { box.innerHTML = "<h2>Couldn't finish this check</h2><p class='muted'>Try again in a minute.</p>"; return; }
+  box.classList.add(v.color);
+  const ex = snap.result.explanation;  // filled by explain.py when it exists
+  const flags = (v.fired || []).map((f) => {
+    const ev = (f.evidence || []).map((e) =>
+      `<div class="muted">${esc(e.summary)}${e.quote ? ` <q>${esc(e.quote)}</q>` : ""}${e.source ? ` · ${esc(e.source)}` : ""}</div>`).join("");
+    return `<div class="flag"><span class="pts">${f.hard ? "STOP" : (f.points > 0 ? "+" : "") + f.points}</span>
+            ${f.points < 0 ? "✅" : f.hard ? "⛔" : "🚩"} <strong>${esc(f.title)}</strong>${ev}</div>`;
+  }).join("");
+  box.innerHTML = `<h2>${LABEL[v.color]}</h2><p><strong>${esc(v.message)}</strong></p>
+    ${ex ? `<p>${esc(ex.headline)}</p><ul>${(ex.bullets || []).map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+    <p class="muted">Score ${v.score} · we could check ${Math.round(v.coverage * 100)}% of what applies ·
+       rules table v${esc(v.table_version)} · the color comes from fixed rules, never from the AI.</p>
+    ${flags || "<p class='muted'>No checks fired.</p>"}
+    ${(v.unknown || []).length ? `<p class="muted">Couldn't check: ${v.unknown.map(esc).join(", ")}</p>` : ""}`;
+  box.scrollIntoView({ behavior: "smooth" });
+}
+
+loadDemos();
+const reopen = new URLSearchParams(location.search).get("id");
+if (reopen) follow(reopen, "saved check");
+</script>
+</body>
+</html>
