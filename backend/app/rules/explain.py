@@ -51,10 +51,13 @@ NEXT_STEP = {
 }
 
 # Words that would contradict the color the rules decided.
+# Seen live: a good green answer said "no red flags found", so a bare "red" can't count as a contradiction.
+_SAFE = r"(?<!not )(?<!n't )\b(safe to (run|open|use)|is safe|looks safe|nothing to worry)\b"
 CONTRADICTS = {
-    "red": r"\b(safe|green|legit(imate)?|nothing to worry|no red flags)\b",
-    "yellow": r"\b(safe to run|green|definitely (a )?scam|malware confirmed)\b",
-    "green": r"\b(red|scam|malicious|malware|dangerous|don't run|do not run|stop)\b",
+    "red": _SAFE + r"|\bgreen\b|\bno red flags\b",
+    "yellow": _SAFE + r"|\bgreen\b|\bdefinitely (a )?scam\b|\bmalware confirmed\b",
+    "green": r"\b(scam|malicious|malware|dangerous|don't run|do not run)\b"
+             r"|\b(verdict|result|color) is red\b|\bred (result|verdict|light)\b",
 }
 
 
@@ -101,7 +104,7 @@ def _usable(data: object, color: str) -> Optional[Explanation]:
     if not (isinstance(headline, str) and isinstance(step, str) and isinstance(bullets, list)):
         return None
     bullets = [b.strip() for b in bullets if isinstance(b, str) and b.strip()]
-    if not (headline.strip() and step.strip() and 1 <= len(bullets) <= 5):
+    if not (headline.strip() and step.strip() and bullets):  # extra bullets are cut to 4 below
         return None
     if len(headline) > 240 or len(step) > 300 or any(len(b) > 300 for b in bullets):
         return None

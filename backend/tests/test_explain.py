@@ -62,6 +62,20 @@ def test_a_green_verdict_cannot_be_called_a_scam():
     assert run(v, fake(answer(headline="This is a scam."))).source == "template"
 
 
+def test_a_green_answer_may_say_no_red_flags():
+    # Seen live from glm-5.3-flash: six bullets and "no red flags found" on a green verdict.
+    v = verdict(color="green", reason="no_flags", fired=[])
+    e = run(v, fake(answer(headline="Green result: no red flags found",
+                           bullets=["It found no red flags."] + [f"Point {i}." for i in range(5)],
+                           next_step="If you want to try it, run it here first.")))
+    assert e.source == "model" and len(e.bullets) == 4
+
+
+def test_a_red_answer_may_say_it_is_not_safe():
+    e = run(verdict(), fake(answer(headline="It is not safe to run this; the company isn't safe to trust.")))
+    assert e.source == "model"
+
+
 def test_model_down_or_wrong_shape_falls_back_to_the_template():
     assert run(verdict(), fake(llm.LLMError("down"))).source == "template"
     assert run(verdict(), fake({"company_name": "BlockNovas"})).source == "template"  # a demo's recorded answer
