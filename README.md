@@ -8,6 +8,8 @@ Fake recruiters send developers a "take-home test": clone this repo, run `npm in
 - **Video:** _link added on submission_
 - Built for the Vultr Agent Rush hackathon, challenge *Blast Radius Zero*.
 
+![A red verdict for a fake recruiter: the domain was seized, and the company claims 12 years on a 2-year-old domain](docs/cover.png)
+
 ## What it checks
 
 | Layer | Question | Status |
@@ -56,6 +58,10 @@ Each demo replays recorded answers from a live run, so it gives the same result 
 | The fake company (`fake_company_blocknovas`) | Red | BlockNovas was a front in a real 2025 fake-recruiter campaign. Its domain is under an FBI seizure notice, and it claims 12 years in business on a domain registered in July 2024. |
 | A real invitation (`benign_repo`) | Green | A real company, a job on its official board and a clean sample project. A tool that cries wolf gets ignored. |
 | The disguised file (`trap_file_pdf`) | Red | `Invoice_2026.pdf` is a harmless Windows program (`whoami.exe`) with a PDF name. The file alone makes it red. |
+
+| The disguised file | A real invitation |
+|---|---|
+| ![Red: a Windows program named like a PDF](docs/verdict-file.png) | ![Green: the job is on the company's official board](docs/verdict-green.png) |
 
 ## Architecture
 
