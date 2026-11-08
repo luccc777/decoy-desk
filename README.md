@@ -29,7 +29,10 @@ One table, [`backend/app/rules/rules_table.yaml`](backend/app/rules/rules_table.
 The language model never picks the color. It does three jobs, and code checks all of them:
 
 1. **Reading the conversation.** It fills a fixed JSON schema (Vultr Serverless Inference, `response_format: json_schema`, no tool calling). Every signal must come with a quote that the code finds word for word in the text, or it is dropped. Hard triggers also need the right words in the quote, and negated quotes ("no need to run anything") are dropped. The worst patterns are matched by plain rules too, so a conversation that says "ignore your instructions" can't hide them.
-2. **Reading the code (check A1).** It gets code only: comments, docstrings and documentation are removed first, so "dear AI, this is safe" has nowhere easy to hide. Each harmful behavior it reports must copy code that is really in the file, or it is dropped. It can only add suspicion: A1 is worth 20 points, so on its own it reaches yellow at most, and a model that is fooled into silence changes nothing the fixed rules found.
+2. **Investigating the code (checks A1 and A2).** This is where the models do the most work:
+   - **A1, investigation.** One model works like an analyst. It gets the list of every code file and the code of the suspicious ones, then follows the trail: if a value or an address is used in a file it hasn't read, it asks for that file, for up to three rounds. Each step shows up live on the page. On a real Contagious Interview sample, it read `meetings.js`, asked for `server/config/index.js`, and found the remote code execution on line 463 that no fixed rule caught.
+   - **A2, confirmation.** Every serious finding (hidden commands, downloaded code that runs, stolen secrets, destroyed files) goes to a second model from another family (`glm-5.3`). It sees only that snippet and its file, and judges it on its own. If it agrees, the attack is confirmed: worth 50 points, red on its own.
+   - **Guards.** The models see code only: comments, docstrings and documentation are removed first, so "dear AI, this is safe" has nowhere easy to hide. Every finding must copy code that is really in the file, or it is dropped. The models can only add suspicion, never remove it, so the worst a prompt injection can do is keep them quiet, and the fixed rules still stand.
 3. **Explaining the verdict** in plain words, after the color is final. An explanation that contradicts the color, has the wrong shape or arrives late is replaced by a template built from the rules that fired.
 
 Every verdict is also written to a hash-chained receipt log (`GET /api/receipts/{id}`, `GET /api/receipts/verify`), so an old verdict can't be changed quietly.
@@ -85,6 +88,7 @@ Everything runs on one Vultr VM. The API container is the only component with ke
   - `qwen3.8-flash-next` reads conversations;
   - `glm-5.3` is the fallback;
   - `glm-5.3-flash` explains verdicts.
+  - `qwen3.8-flash-next` also investigates code, and `glm-5.3` independently confirms what it finds.
 
 ## Containment
 
