@@ -166,7 +166,8 @@ RULES: dict[str, list[tuple[str, ...]]] = {
 
 # A model alone may not set off a hard trigger: its quote must also name what the trigger is about.
 MUST_MENTION = {
-    "fix_command": r"\b(camera|webcam|microphone|mic|audio|sound|video|zoom|teams|meet|meeting|call)\b",
+    # Seen live: "run python main.py before our call tomorrow" passed when "call" counted. Devices only.
+    "fix_command": r"\b(camera|webcam|microphone|mic|audio|sound|video|zoom|teams)\b",
     "pay_to_work": r"\b(pay|paid|payment|fee|deposit|transfer|usdt|usdc|crypto|bitcoin|btc|eth|buy|purchase|\$)",
 }
 

@@ -1,0 +1,38 @@
+{
+ "company_name": "TechCorp",
+ "company_website": "https://techcorp.example.com",
+ "job_title": "Software Engineer",
+ "founded_year": 2015,
+ "years_in_business": 10,
+ "age_quote": "We are a 10-year-old company",
+ "signals": {
+  "fix_command": {
+   "present": true,
+   "quote": "please open the take-home project in VS Code and run python main.py before our call tomorrow, so we can review it together."
+  },
+  "pay_to_work": {
+   "present": false,
+   "quote": ""
+  },
+  "run_locally_or_rushed": {
+   "present": true,
+   "quote": "please open the take-home project in VS Code and run python main.py before our call tomorrow, so we can review it together."
+  },
+  "platform_or_role_hop": {
+   "present": false,
+   "quote": ""
+  },
+  "work_computer_or_admin": {
+   "present": false,
+   "quote": ""
+  },
+  "too_good_to_be_true": {
+   "present": false,
+   "quote": ""
+  },
+  "known_contact_new_venture": {
+   "present": false,
+   "quote": ""
+  }
+ }
+}

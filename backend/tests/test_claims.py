@@ -79,6 +79,14 @@ def test_the_model_alone_cannot_make_fixing_a_bug_a_hard_trigger():
     assert by_check(c)["H1_fix_command"].status == "unknown"
 
 
+def test_a_call_on_the_calendar_is_not_a_fix_command():
+    # Seen live while recording the trap repo demo: the model quoted this as a fix-your-camera command.
+    text = ("Please open the take-home project in VS Code and run python main.py before our call tomorrow, "
+            "so we can review it together.")
+    c = claims(text, fake(model_answer(fix_command="run python main.py before our call tomorrow")))
+    assert by_check(c)["H1_fix_command"].status == "unknown"
+
+
 def test_the_model_can_still_raise_a_hard_trigger_with_the_right_words():
     text = "Before the interview, your Zoom audio needs the new SDK: install it from our portal."
     c = claims(text, fake(model_answer(fix_command="your Zoom audio needs the new SDK: install it")))
