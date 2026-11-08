@@ -25,6 +25,7 @@ from app.rules.explain import explain
 from app.schemas import Submission
 from app.static_scan.fetch import download_repo
 from app.static_scan.file_scan import detect_type, scan_file
+from app.code_review import review_code
 from app.static_scan.files import RepoFiles, from_dict, load_dir
 from app.static_scan.repo_scan import scan_repo
 
@@ -33,9 +34,11 @@ SENDER_INPUTS = {"conversation", "company", "job", "contact_email", "email_heade
 REPO_CHECKS = ("S1_runs_on_folder_open", "S2_install_script", "S3_install_fetches_remote_code",
                "S4_obfuscated_code", "S5_hidden_urls", "S6_git_hooks", "S10_runs_downloaded_code",
                "S11_hidden_shell_command", "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip",
-               "S14_walks_home_directory", "P8_new_domains_in_repo_config")
+               "S14_walks_home_directory", "P8_new_domains_in_repo_config", "A1_model_flags_code")
 TEXT_CHECKS = ("S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code", "S11_hidden_shell_command",
-               "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip", "S14_walks_home_directory")
+               "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip", "S14_walks_home_directory",
+               "A1_model_flags_code")
+MODEL_NOTE = "A language model is reading the code with comments removed. It can only add suspicion, never remove it"
 # Files whose behavior only shows when they run. Until the decoy machine runs them, S4, S5 and
 # S10 stay unknown for these, so an honestly named program comes out yellow, never green.
 RUN_TO_JUDGE = frozenset({"executable", "shortcut", "disk_image", "unknown"})
@@ -141,6 +144,8 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
             found = scan_repo(files)
             found.append(await repo_config_finding(client, files.texts, now))
             feed.add("static", found)
+            job.emit("static", MODEL_NOTE)
+            feed.add("static", [await review_code(files, complete=complete)])
             result["repo"] = {"name": files.name, "files": len(files.sizes), "read": len(files.texts)}
             job.emit("static", f"Read {len(files.texts)} files", "done")
 
@@ -148,6 +153,10 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
         kind = detect_type(upload.data)
         job.emit("static", f"Reading {upload.name} without opening it")
         feed.add("static", scan_file(upload.name, upload.data) + _file_text_findings(upload, kind.family))
+        if kind.family in ("script", "text"):  # programs wait for the decoy machine; A1 is already unknown for them
+            job.emit("static", MODEL_NOTE)
+            text = upload.data.decode("utf-8", errors="replace")
+            feed.add("static", [await review_code(from_dict({upload.name: text}, name=upload.name), complete=complete)])
         result["file"] = {"name": upload.name, "size": len(upload.data), "kind": kind.label}
         job.emit("static", f"It's a {kind.label}", "done")
 

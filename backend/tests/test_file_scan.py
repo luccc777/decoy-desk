@@ -851,8 +851,8 @@ class TestScanFile:
 # ---------------------------------------------------------------- end to end with the rules engine
 
 def pipeline_findings() -> list[Finding]:
-    # The pipeline answers S4/S5/S10 for uploads (binary documents come back clear); scan_file only does S7-S9.
-    return [Finding(check=c, status="clear") for c in ("S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code")]
+    # The pipeline answers the code checks for uploads (binary documents come back clear); scan_file only does S7-S9.
+    return [Finding(check=c, status="clear") for c in TEXT_CHECKS]
 
 
 def test_pe_named_pdf_is_red():

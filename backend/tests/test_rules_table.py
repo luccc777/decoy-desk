@@ -43,7 +43,7 @@ def test_hard_triggers():
 
 
 def test_ids_and_layers():
-    layer_of = {"S": "static", "D": "decoy"}
+    layer_of = {"S": "static", "A": "static", "D": "decoy"}  # A: the model's reading of the code
     for cid, c in T.checks.items():
         assert re.fullmatch(r"[A-Z]\d+_[a-z0-9_]+", cid), cid
         assert c.layer == layer_of.get(cid[0], "sender"), cid
