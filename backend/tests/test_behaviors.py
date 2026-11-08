@@ -35,11 +35,14 @@ def status(rule, path, text):
     (".vscode/tasks.json", '{"command": "echo SGVsbG8K | base64 -d | zsh > /dev/null 2>&1 &"}'),
     (".vscode/tasks.json", '{"command": "echo Y29uc29sZS5sb2coMSk= | base64 --decode | node"}'),
     ("run.sh", 'node -e "$(echo Y29uc29sZS5sb2coMSk= | base64 -d)"'),
+    (".vscode/tasks.json", '"command":' + " " * 300 + '"cd .vscode && node -e \\"console.log(atob(\'Y29uc29sZS5sb2coMSk=\'))\\" | node",'),
+    (".vscode/tasks.json", '"command":' + " " * 120 + '"npm run lint"'),
     ("x.js", "eval(Buffer.from(blob, 'base64').toString())"),
     ("x.py", "exec(base64.b64decode(blob))"),
     ("x.ps1", "iex ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($b)))"),
 ], ids=["py-list-args", "bat-encoded", "iex-download", "irm-pipe-iex", "certutil", "bitsadmin", "mshta",
-        "npm-bypass", "node-encoded", "b64-to-zsh", "b64-to-node", "node-e-b64", "eval-buffer", "exec-b64decode",
+        "npm-bypass", "node-encoded", "b64-to-zsh", "b64-to-node", "node-e-b64", "atob-piped-to-node",
+        "command-off-screen", "eval-buffer", "exec-b64decode",
         "iex-frombase64"])
 def test_s11_catches_hidden_shell_commands(path, text):
     assert status("S11", path, text) == "hit"
@@ -53,7 +56,9 @@ def test_s11_catches_hidden_shell_commands(path, text):
     ("docs/security.txt", "IEX (New-Object Net.WebClient).DownloadString(...) is a classic cradle"),
     ("decode.sh", "base64 -d logo.b64 > logo.png"),
     ("img.js", "const png = Buffer.from(data, 'base64').toString('binary')"),
-], ids=["plain-command", "git", "readme-mentions-it", "pwsh-script", "docs", "decode-to-file", "decode-image"])
+    (".vscode/tasks.json", '{\n  "tasks": [{\n    "command": "npm run lint",\n    "args": ["--fix"]\n  }]\n}'),
+], ids=["plain-command", "git", "readme-mentions-it", "pwsh-script", "docs", "decode-to-file", "decode-image",
+        "normal-task"])
 def test_s11_leaves_ordinary_shell_use_alone(path, text):
     assert status("S11", path, text) == "clear"
 
