@@ -183,6 +183,7 @@ async function loadDemos() {
        <span class="go">Run it →</span></button>`).join("")
     || '<p class="note">No recorded cases right now.</p>';
   document.querySelectorAll("[data-demo]").forEach((b) => b.onclick = async () => {
+    b.querySelector(".go").textContent = "Running…";
     try {
       const { id } = await api("/demos/" + b.dataset.demo, { method: "POST" });
       follow(id, b.dataset.title);
@@ -222,6 +223,8 @@ function follow(id, title) {
   history.replaceState(null, "", "?id=" + id);
   $("#live").classList.remove("hidden"); $("#verdict").classList.add("hidden");
   $("#title").textContent = "Checking: " + title; $("#feed").innerHTML = "";
+  // Seen in a run-through: the feed starts below the form, so a click looked like it did nothing.
+  if (!reopen) $(".result").scrollIntoView({ behavior: "smooth", block: "start" });
   const es = new EventSource(`/api/checks/${id}/events`);
   es.addEventListener("progress", (m) => addEvent(JSON.parse(m.data)));
   es.addEventListener("end", async () => { es.close(); showVerdict(await api("/checks/" + id)); });
