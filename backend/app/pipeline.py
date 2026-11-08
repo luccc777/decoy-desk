@@ -25,7 +25,7 @@ from app.rules.explain import explain
 from app.schemas import Submission
 from app.static_scan.fetch import download_repo
 from app.static_scan.file_scan import detect_type, scan_file
-from app.code_review import review_code
+from app.code_review import investigate
 from app.static_scan.files import RepoFiles, from_dict, load_dir
 from app.static_scan.repo_scan import scan_repo
 
@@ -34,11 +34,13 @@ SENDER_INPUTS = {"conversation", "company", "job", "contact_email", "email_heade
 REPO_CHECKS = ("S1_runs_on_folder_open", "S2_install_script", "S3_install_fetches_remote_code",
                "S4_obfuscated_code", "S5_hidden_urls", "S6_git_hooks", "S10_runs_downloaded_code",
                "S11_hidden_shell_command", "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip",
-               "S14_walks_home_directory", "P8_new_domains_in_repo_config", "A1_model_flags_code")
+               "S14_walks_home_directory", "P8_new_domains_in_repo_config", "A1_model_flags_code",
+               "A2_model_confirmed_attack")
 TEXT_CHECKS = ("S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code", "S11_hidden_shell_command",
                "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip", "S14_walks_home_directory",
-               "A1_model_flags_code")
-MODEL_NOTE = "A language model is reading the code with comments removed. It can only add suspicion, never remove it"
+               "A1_model_flags_code", "A2_model_confirmed_attack")
+MODEL_NOTE = ("Two language models now investigate the code, comments removed. They can follow the trail into "
+              "other files, and they can only add suspicion, never remove it")
 # Files whose behavior only shows when they run. Until the decoy machine runs them, S4, S5 and
 # S10 stay unknown for these, so an honestly named program comes out yellow, never green.
 RUN_TO_JUDGE = frozenset({"executable", "shortcut", "disk_image", "unknown"})
@@ -110,7 +112,10 @@ async def _repo_files(job: Job, sub: Submission, client: httpx.AsyncClient,
 async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now: Optional[datetime] = None,
                     complete: Optional[Complete] = None, upload: Optional[Upload] = None,
                     repo_dir: Optional[Path] = None, github_token: Optional[str] = None,
-                    table: Optional[RulesTable] = None) -> dict[str, Any]:
+                    table: Optional[RulesTable] = None, review_complete: Optional[Complete] = None,
+                    review_verify: Optional[Complete] = None) -> dict[str, Any]:
+    """complete reads the conversation (demos pass their recording); review_complete and review_verify are the
+    two models investigating the code, live by default, also in demos."""
     now = now or utcnow()
     table = table or load_table()
     inputs = sub.inputs() | ({"file"} if upload else set()) | ({"repo"} if repo_dir else set())
@@ -148,7 +153,8 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
             # Seen live: in a 75-file sample the model never got the flagged file. The rules' files go first.
             flagged = tuple(p for p in files.texts
                             if any(p in e.summary for f in found if f.status == "hit" for e in f.evidence))
-            feed.add("static", [await review_code(files, flagged=flagged, complete=complete)])
+            feed.add("static", await investigate(files, flagged=flagged, complete=review_complete,
+                                                 verify=review_verify, emit=job.emit))
             result["repo"] = {"name": files.name, "files": len(files.sizes), "read": len(files.texts)}
             job.emit("static", f"Read {len(files.texts)} files", "done")
 
@@ -159,7 +165,8 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
         if kind.family in ("script", "text"):  # programs wait for the decoy machine; A1 is already unknown for them
             job.emit("static", MODEL_NOTE)
             text = upload.data.decode("utf-8", errors="replace")
-            feed.add("static", [await review_code(from_dict({upload.name: text}, name=upload.name), complete=complete)])
+            feed.add("static", await investigate(from_dict({upload.name: text}, name=upload.name),
+                                                 complete=review_complete, verify=review_verify, emit=job.emit))
         result["file"] = {"name": upload.name, "size": len(upload.data), "kind": kind.label}
         job.emit("static", f"It's a {kind.label}", "done")
 

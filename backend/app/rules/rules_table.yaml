@@ -335,7 +335,15 @@ checks:
     layer: static
     needs: [[repo, file]]
     points: 20
-    title: A language model reading the code found harmful behavior
+    title: A language model investigating the code found harmful behavior
+
+  # A second model from another family judges each serious finding on its own. If it agrees, the attack is
+  # confirmed: red on its own. Both models only ever add suspicion.
+  A2_model_confirmed_attack:
+    layer: static
+    needs: [[repo, file]]
+    points: 50
+    title: A second language model, on its own, confirmed the code attacks whoever runs it
 
   S7_file_type_mismatch:
     layer: static
