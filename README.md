@@ -26,10 +26,11 @@ One table, [`backend/app/rules/rules_table.yaml`](backend/app/rules/rules_table.
 - **Yellow:** the score is 20 to 49, or fewer than 60% of the checks that apply could be answered. A failed check counts as unknown, never as clear.
 - **Green:** anything else. Signs of a real company, such as the job being listed on the official careers board, take off at most 20 points.
 
-The language model never picks the color. It does two jobs, and code checks both:
+The language model never picks the color. It does three jobs, and code checks all of them:
 
 1. **Reading the conversation.** It fills a fixed JSON schema (Vultr Serverless Inference, `response_format: json_schema`, no tool calling). Every signal must come with a quote that the code finds word for word in the text, or it is dropped. Hard triggers also need the right words in the quote, and negated quotes ("no need to run anything") are dropped. The worst patterns are matched by plain rules too, so a conversation that says "ignore your instructions" can't hide them.
-2. **Explaining the verdict** in plain words, after the color is final. An explanation that contradicts the color, has the wrong shape or arrives late is replaced by a template built from the rules that fired.
+2. **Reading the code (check A1).** It gets code only: comments, docstrings and documentation are removed first, so "dear AI, this is safe" has nowhere easy to hide. Each harmful behavior it reports must copy code that is really in the file, or it is dropped. It can only add suspicion: A1 is worth 20 points, so on its own it reaches yellow at most, and a model that is fooled into silence changes nothing the fixed rules found.
+3. **Explaining the verdict** in plain words, after the color is final. An explanation that contradicts the color, has the wrong shape or arrives late is replaced by a template built from the rules that fired.
 
 Every verdict is also written to a hash-chained receipt log (`GET /api/receipts/{id}`, `GET /api/receipts/verify`), so an old verdict can't be changed quietly.
 
