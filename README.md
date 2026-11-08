@@ -133,3 +133,7 @@ python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 ## License
 
 MIT
+
+## Video Link
+
+https://youtu.be/2rB8raEhRtc
