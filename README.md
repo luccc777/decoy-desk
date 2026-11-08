@@ -15,7 +15,7 @@ Fake recruiters send developers a "take-home test": clone this repo, run `npm in
 | Layer | Question | Status |
 |---|---|---|
 | 1. Who sent it | Does the company exist, is the domain as old as they claim, is the job on the official board, is the recruiter's email and GitHub account what it should be, does the conversation follow a known scam script? | Live |
-| 2. What's inside, read without running | Tasks that run when you open the folder, install scripts, obfuscated code, code that downloads and runs code, hidden URLs, git hooks, disguised file types, Office macros, archives hiding programs | Live |
+| 2. What's inside, read without running | Tasks that run when you open the folder, install scripts, obfuscated code, code that downloads and runs code, hidden URLs, git hooks, hidden or encoded PowerShell, code that points at your keys, browser passwords or wallets, connections to hard-coded addresses, walks through your home folder, disguised file types, Office macros, archives hiding programs | Live |
 | 3. The decoy machine | Run it in a gVisor sandbox with planted fake keys and an allowlisting proxy, and watch from outside what it reads, runs and tries to reach | Containment proven (`infra/gvisor_verify.sh`); the runner is in progress |
 
 ## How the verdict is decided
@@ -56,6 +56,7 @@ Each demo replays recorded answers from a live run, so it gives the same result 
 | Demo | Expected | Why |
 |---|---|---|
 | The fake company (`fake_company_blocknovas`) | Red | BlockNovas was a front in a real 2025 fake-recruiter campaign. Its domain is under an FBI seizure notice, and it claims 12 years in business on a domain registered in July 2024. |
+| The trap repo (`trap_repo_python`) | Red | A take-home test that, the moment you open the folder in VS Code, runs a script with a hidden, encoded PowerShell command, a walk through your home folder and a connection to a hard-coded address. A harmless replica: nothing in it is ever called. |
 | A real invitation (`benign_repo`) | Green | A real company, a job on its official board and a clean sample project. A tool that cries wolf gets ignored. |
 | The disguised file (`trap_file_pdf`) | Red | `Invoice_2026.pdf` is a harmless Windows program (`whoami.exe`) with a PDF name. The file alone makes it red. |
 
