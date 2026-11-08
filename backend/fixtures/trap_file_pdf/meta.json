@@ -1,4 +1,5 @@
 {
   "title": "The disguised file",
-  "description": "An 'invoice' that is really a Windows program with a PDF name. The file alone makes it red."
+  "description": "An 'invoice' that is really a Windows program with a PDF name. The file alone makes it red.",
+  "order": 2
 }

@@ -144,7 +144,8 @@ async def check_events(job_id: str, request: Request):
 @app.get("/api/demos")
 def list_demos() -> list[dict]:
     out = []
-    for name in fixtures.names():
+    # The page lists demos in the order the video shows them ("order" in meta.json), then by name.
+    for name in sorted(fixtures.names(), key=lambda n: (fixtures.meta(n).get("order", 99), n)):
         meta = fixtures.meta(name)
         out.append({"name": name, "title": meta.get("title", name), "description": meta.get("description", "")})
     return out

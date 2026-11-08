@@ -62,8 +62,10 @@
     <span class="muted">Nothing you send is run on your computer.</span>
   </form>
 
-  <div id="live" class="card hidden"><strong id="title">Checking…</strong><div id="feed"></div></div>
   <div id="verdict" class="card verdict hidden"></div>
+  <div id="live" class="card hidden"><strong id="title">Checking…</strong><div id="feed"></div></div>
+  <p class="muted">Open source on <a href="https://github.com/luccc777/decoy-desk">GitHub</a> ·
+     runs on Vultr Cloud Compute (gVisor) and Vultr Serverless Inference.</p>
 </main>
 
 <script>
@@ -151,10 +153,14 @@ function showVerdict(snap) {
     return `<div class="flag"><span class="pts">${f.hard ? "STOP" : (f.points > 0 ? "+" : "") + f.points}</span>
             ${f.points < 0 ? "✅" : f.hard ? "⛔" : "🚩"} <strong>${esc(f.title)}</strong>${ev}</div>`;
   }).join("");
+  const receipt = snap.result.receipt;
   box.innerHTML = `<h2>${LABEL[v.color]}</h2><p><strong>${esc(v.message)}</strong></p>
-    ${ex ? `<p>${esc(ex.headline)}</p><ul>${(ex.bullets || []).map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+    ${ex && ex.headline !== v.message ? `<p>${esc(ex.headline)}</p>` : ""}
+    ${ex ? `<ul>${(ex.bullets || []).map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+    ${ex && ex.next_step ? `<p><strong>What to do now:</strong> ${esc(ex.next_step)}</p>` : ""}
     <p class="muted">Score ${v.score} · we could check ${Math.round(v.coverage * 100)}% of what applies ·
-       rules table v${esc(v.table_version)} · the color comes from fixed rules, never from the AI.</p>
+       rules table v${esc(v.table_version)} · the color comes from fixed rules, never from the AI
+       ${receipt ? ` · receipt <code title="${esc(receipt.hash)}">${esc(receipt.hash.slice(0, 12))}</code>` : ""}</p>
     ${flags || "<p class='muted'>No checks fired.</p>"}
     ${(v.unknown || []).length ? `<p class="muted">Couldn't check: ${v.unknown.map(esc).join(", ")}</p>` : ""}`;
   box.scrollIntoView({ behavior: "smooth" });
@@ -162,7 +168,13 @@ function showVerdict(snap) {
 
 loadDemos();
 const reopen = new URLSearchParams(location.search).get("id");
-if (reopen) follow(reopen, "saved check");
+if (reopen) {
+  // A shared verdict link opens on the result; the forms are one click away.
+  document.querySelectorAll("#demos, #form").forEach((el) => el.closest(".card").classList.add("hidden"));
+  $("#verdict").insertAdjacentHTML("beforebegin",
+    '<p><a href="/">← Check something else</a></p>');
+  follow(reopen, "saved check");
+}
 </script>
 </body>
 </html>
