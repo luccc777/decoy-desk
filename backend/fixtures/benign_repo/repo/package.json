@@ -1,0 +1,8 @@
+{
+  "name": "pairing-sample",
+  "version": "1.0.0",
+  "description": "A tiny HTTP service used to talk through code in a pairing session.",
+  "main": "index.js",
+  "scripts": { "start": "node index.js", "test": "node --test" },
+  "license": "MIT"
+}
