@@ -163,7 +163,7 @@ function showVerdict(snap) {
        ${receipt ? ` · receipt <code title="${esc(receipt.hash)}">${esc(receipt.hash.slice(0, 12))}</code>` : ""}</p>
     ${flags || "<p class='muted'>No checks fired.</p>"}
     ${(v.unknown || []).length ? `<p class="muted">Couldn't check: ${v.unknown.map(esc).join(", ")}</p>` : ""}`;
-  box.scrollIntoView({ behavior: "smooth" });
+  if (!reopen) box.scrollIntoView({ behavior: "smooth" });  // a shared link already opens on the verdict
 }
 
 loadDemos();
