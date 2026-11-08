@@ -48,7 +48,7 @@ NEXT_STEP = {
            "and tell your security team.",
     "yellow": "Find the company yourself, not through links they sent, and confirm the job on its official "
               "site before you run anything.",
-    "green": "If you decide to run it, run it here or on a throwaway machine first, never on your work computer.",
+    "green": "If you decide to run it, use a throwaway machine first, never your work computer.",
 }
 
 # Words that would contradict the color the rules decided.

@@ -10,6 +10,7 @@ the model at all.
 
 from __future__ import annotations
 
+import asyncio
 import re
 from collections.abc import Awaitable, Callable
 from typing import Optional
@@ -272,11 +273,15 @@ def build_claims(text: str, data: Optional[dict], now_year: int) -> Claims:
     )
 
 
+CLAIMS_TIMEOUT_S = 60  # seen live: 135 s under load; past this the plain rules decide alone
+
+
 async def extract_claims(text: str, *, now_year: int, complete: Optional[Complete] = None) -> Claims:
     complete = complete or llm.structured
     try:
-        data = await complete(system=SYSTEM, user=f"<conversation>\n{text}\n</conversation>",
-                              schema_name="conversation_claims", schema=SCHEMA)
-    except llm.LLMError:
+        data = await asyncio.wait_for(complete(system=SYSTEM, user=f"<conversation>\n{text}\n</conversation>",
+                                               schema_name="conversation_claims", schema=SCHEMA),
+                                      timeout=CLAIMS_TIMEOUT_S)
+    except (llm.LLMError, asyncio.TimeoutError):
         data = None
     return build_claims(text, data, now_year)

@@ -119,6 +119,20 @@ def test_fields_not_in_the_text_are_dropped():
     assert c.founded_year == 2014  # the plain rule still reads "for over 12 years"
 
 
+def test_a_slow_model_is_cut_off_and_the_rules_still_apply(monkeypatch):
+    # Seen live: the conversation took 135 s under load. Past the limit, the plain rules decide alone.
+    from app.legitimacy import claims as claims_module
+    monkeypatch.setattr(claims_module, "CLAIMS_TIMEOUT_S", 0.05)
+
+    async def slow(**kwargs):
+        await asyncio.sleep(1)
+        return model_answer()
+
+    c = claims(BLOCKNOVA, slow)
+    assert not c.model_ok
+    assert by_check(c)["T3_work_computer_or_admin"].status == "hit"
+
+
 def test_model_down_keeps_the_rules_and_says_unknown_for_the_rest():
     c = claims(BLOCKNOVA, _down)
     f = by_check(c)

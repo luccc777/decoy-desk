@@ -6,6 +6,7 @@ as soon as it's known. The decoy machine (layer 3) plugs in after the static rea
 
 from __future__ import annotations
 
+import asyncio
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -45,6 +46,7 @@ MODEL_NOTE = ("Two language models now investigate the code, comments removed. T
 # S10 stay unknown for these, so an honestly named program comes out yellow, never green.
 RUN_TO_JUDGE = frozenset({"executable", "shortcut", "disk_image", "unknown"})
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+HEARTBEAT_S = 20
 
 
 class Upload(BaseModel):
@@ -125,7 +127,16 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
     # Layer 1: who sent it.
     if inputs & SENDER_INPUTS or sub.repo_url:
         job.emit("sender", "Checking who sent this: public records, the job board, GitHub and the conversation")
-        report = await check_sender(sub, client=client, now=now, complete=complete, github_token=github_token)
+        # Seen live: 135 s with nothing on screen. A heartbeat shows the check is alive while sources answer.
+        task = asyncio.ensure_future(check_sender(sub, client=client, now=now, complete=complete,
+                                                  github_token=github_token))
+        waited = 0
+        while not task.done():
+            await asyncio.wait({task}, timeout=HEARTBEAT_S)
+            if not task.done():
+                waited += HEARTBEAT_S
+                job.emit("sender", f"Still checking public records, job boards and the conversation ({waited}s)")
+        report = task.result()
         feed.add("sender", report.findings)
         said = report.claims
         result["sender"] = {

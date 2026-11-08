@@ -39,7 +39,7 @@ max_negative_points: 20  # risk-lowering points are capped at -20 in total
 messages:
   red: Stop. Don't open or run this on your computer.
   yellow: We couldn't confirm this is safe. Check with the company through its official channel before you run anything.
-  green: No red flags found. That isn't a guarantee, so if you run it, run it here first.
+  green: No red flags found. That isn't a guarantee, so if you run it, use a throwaway machine, never your work computer.
 
 checks:
 

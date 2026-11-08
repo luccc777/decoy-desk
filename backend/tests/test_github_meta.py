@@ -349,7 +349,14 @@ class TestCalls:
         f = run(mock(routes, seen), NOW, company_name="Acme")
         listing = seen[-1]
         assert listing.url.params["per_page"] == "100" and listing.url.params["type"] == "public"
-        assert f[C9_TESTS].status == "hit"
+        # Seen live: an org found by the company's name alone may be anyone's, so it can't count against them.
+        assert f[C9_TESTS].status == "unknown" and "found by name only" in summaries(f[C9_TESTS])
+
+    def test_a_guessed_org_counts_when_github_ties_it_to_the_official_domain(self):
+        routes = {"/orgs/acme": (200, org(public_repos=2, is_verified=True, blog="acme.io")),
+                  "/orgs/acme/repos": (200, repos("skilltest-frontend", "skilltest-backend"))}
+        f = run(mock(routes), NOW, company_name="Acme", official_domain="acme.io")
+        assert f[C9_VERIFIED].status == "hit" and f[C9_TESTS].status == "hit"
 
     def test_slug_error_then_next_slug_found(self):
         routes = {"/orgs/acme-hiring": (500, {}), "/orgs/acme": (200, org(is_verified=True, blog="acme.io"))}

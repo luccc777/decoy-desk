@@ -406,8 +406,15 @@ async def github_findings(client: httpx.AsyncClient, *, repo_url: Optional[str],
                 client, f"/orgs/{login}/repos", token=token, params={"type": "public", "per_page": MAX_LISTED}))
             if not isinstance(repos, list):
                 repos, repos_err = None, repos_err or f"GitHub didn't list the repos of {login}"
-        findings += [assessment_finding(org, repos, claimed_founded_year, why_no_repos=repos_err),
-                     verified_finding(org, official_domain)]
+        tests = assessment_finding(org, repos, claimed_founded_year, why_no_repos=repos_err)
+        verified = verified_finding(org, official_domain)
+        owner = ((repo or {}) if isinstance(repo, dict) else {}).get("owner") or {}
+        from_repo = owner.get("type") == "Organization"
+        if not from_repo and verified.status != "hit" and tests.status == "hit":
+            # Seen live: "Nexora Labs" matched a GitHub org created in 2025 that nothing ties to the sender.
+            tests = unknown(C9_TESTS, f"the GitHub org {org.get('login')} was found by name only, and GitHub "
+                                      f"doesn't tie it to the company's domain, so it may belong to someone else")
+        findings += [tests, verified]
     elif applies:
         findings += [unknown(C9_TESTS, org_err), unknown(C9_VERIFIED, org_err)]
     return findings
