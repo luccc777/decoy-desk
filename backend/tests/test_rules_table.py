@@ -39,7 +39,7 @@ def test_published_numbers():
 
 def test_hard_triggers():
     hard = {cid.split("_")[0] for cid, c in T.checks.items() if c.hard}
-    assert hard == {"H1", "H2", "H3", "H4", "H5", "H6", "S3", "S7", "S8", "D1", "D2", "D3", "D4", "D5"}
+    assert hard == {"H1", "H2", "H3", "H4", "H5", "H6", "S3", "S7", "S8", "S11", "D1", "D2", "D3", "D4", "D5"}
 
 
 def test_ids_and_layers():

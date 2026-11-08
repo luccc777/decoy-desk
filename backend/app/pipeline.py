@@ -32,8 +32,10 @@ SENDER_INPUTS = {"conversation", "company", "job", "contact_email", "email_heade
                  "github_handle", "linkedin_answers"}
 REPO_CHECKS = ("S1_runs_on_folder_open", "S2_install_script", "S3_install_fetches_remote_code",
                "S4_obfuscated_code", "S5_hidden_urls", "S6_git_hooks", "S10_runs_downloaded_code",
-               "P8_new_domains_in_repo_config")
-TEXT_CHECKS = ("S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code")
+               "S11_hidden_shell_command", "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip",
+               "S14_walks_home_directory", "P8_new_domains_in_repo_config")
+TEXT_CHECKS = ("S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code", "S11_hidden_shell_command",
+               "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip", "S14_walks_home_directory")
 # Files whose behavior only shows when they run. Until the decoy machine runs them, S4, S5 and
 # S10 stay unknown for these, so an honestly named program comes out yellow, never green.
 RUN_TO_JUDGE = frozenset({"executable", "shortcut", "disk_image", "unknown"})

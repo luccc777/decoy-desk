@@ -305,6 +305,30 @@ checks:
     points: 40
     title: The code downloads something and runs it as code (eval or new Function)
 
+  S11_hidden_shell_command:
+    layer: static
+    needs: [[repo, file]]
+    hard: true
+    title: The code runs a hidden or encoded shell command (PowerShell -EncodedCommand, a download run with Invoke-Expression, certutil, mshta)
+
+  S12_reads_secret_stores:
+    layer: static
+    needs: [[repo, file]]
+    points: 35
+    title: The code points at where your keys, browser passwords or crypto wallets are stored
+
+  S13_connects_to_hardcoded_ip:
+    layer: static
+    needs: [[repo, file]]
+    points: 25
+    title: The code connects straight to a hard-coded IP address or opens a remote shell
+
+  S14_walks_home_directory:
+    layer: static
+    needs: [[repo, file]]
+    points: 20
+    title: The code walks through every file in your home folder
+
   S7_file_type_mismatch:
     layer: static
     needs: [file]

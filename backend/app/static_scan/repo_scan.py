@@ -11,6 +11,7 @@ from collections.abc import Callable
 
 from app.legitimacy.common import unknown
 from app.rules.engine import Finding
+from app.static_scan.behaviors import check_hardcoded_ip, check_hidden_shell, check_home_walk, check_secret_stores
 from app.static_scan.files import RepoFiles
 from app.static_scan.hidden_urls import check_hidden_urls
 from app.static_scan.hooks import check_git_hooks
@@ -27,11 +28,15 @@ CHECKS: tuple[tuple[str, Callable[[RepoFiles], Finding]], ...] = (
     ("S5_hidden_urls", check_hidden_urls),
     ("S6_git_hooks", check_git_hooks),
     ("S10_runs_downloaded_code", check_downloaded_code),
+    ("S11_hidden_shell_command", check_hidden_shell),
+    ("S12_reads_secret_stores", check_secret_stores),
+    ("S13_connects_to_hardcoded_ip", check_hardcoded_ip),
+    ("S14_walks_home_directory", check_home_walk),
 )
 
 
 def scan_repo(files: RepoFiles) -> list[Finding]:
-    """One finding for each of S1, S2, S3, S4, S5, S6 and S10, in that order."""
+    """One finding for each check in CHECKS (S1-S6, S10-S14), in that order."""
     findings = []
     for check, run in CHECKS:
         try:

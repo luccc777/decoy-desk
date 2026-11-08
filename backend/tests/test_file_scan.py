@@ -24,7 +24,7 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-from app.pipeline import Upload, run_check
+from app.pipeline import TEXT_CHECKS, Upload, run_check
 from app.rules.engine import Finding, decide, load_table
 from app.schemas import Submission
 from app.static_scan import office
@@ -887,7 +887,7 @@ def test_an_honestly_named_program_is_never_green(name, data):
     """Only running a program shows what it does. Until the decoy machine runs, that's yellow, not green."""
     verdict = run_upload(name, data)
     assert (verdict["color"], verdict["reason"]) == ("yellow", "low_coverage"), verdict
-    assert set(verdict["unknown"]) == {"S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code"}
+    assert set(verdict["unknown"]) == set(TEXT_CHECKS)  # every code check waits for the decoy machine
 
 
 @pytest.mark.parametrize("name, data", [("report.pdf", TINY_PDF), ("photo.png", png())])

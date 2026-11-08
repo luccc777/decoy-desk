@@ -10,8 +10,10 @@ from app.static_scan import repo_scan
 from app.static_scan.files import RepoFiles, from_dict
 from app.static_scan.repo_scan import scan_repo
 
-CHECK_IDS = ["S1_runs_on_folder_open", "S2_install_script", "S3_install_fetches_remote_code",
-             "S4_obfuscated_code", "S5_hidden_urls", "S6_git_hooks", "S10_runs_downloaded_code"]
+CHECK_IDS = [cid for cid, _ in repo_scan.CHECKS]
+# S11-S14 have their own malicious samples in test_behaviors.py.
+BEHAVIOR_IDS = {"S11_hidden_shell_command", "S12_reads_secret_stores", "S13_connects_to_hardcoded_ip",
+                "S14_walks_home_directory"}
 
 C2_URL = "http://147.124.212.125:1224/api/service/token"
 C2_B64 = base64.b64encode(C2_URL.encode()).decode()
@@ -137,7 +139,8 @@ class TestScanRepo:
 
     def test_malicious_repo_hits_every_check(self):
         findings = scan_repo(from_dict(MALICIOUS))
-        assert {f.check: f.status for f in findings} == {cid: "hit" for cid in CHECK_IDS}
+        assert {f.check: f.status for f in findings if f.check not in BEHAVIOR_IDS} == \
+            {cid: "hit" for cid in CHECK_IDS if cid not in BEHAVIOR_IDS}
 
     def test_benign_repo_is_all_clear(self):
         findings = scan_repo(from_dict(BENIGN))

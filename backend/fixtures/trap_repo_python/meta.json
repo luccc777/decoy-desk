@@ -1,0 +1,5 @@
+{
+  "title": "The trap repo",
+  "description": "A take-home test that runs a hidden PowerShell command the moment you open the folder, maps your home folder and calls a hard-coded address. A harmless replica: nothing in it is ever called.",
+  "order": 2
+}

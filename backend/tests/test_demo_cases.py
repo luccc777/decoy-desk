@@ -40,6 +40,13 @@ def test_the_real_invitation_is_green_and_its_repo_is_clean():
     assert result["repo"]["files"] == 4
 
 
+def test_the_trap_repo_is_red_from_the_code_alone():
+    result = run_demo("trap_repo_python")
+    assert result["verdict"]["color"] == "red"
+    assert {"S1_runs_on_folder_open", "S11_hidden_shell_command", "S13_connects_to_hardcoded_ip",
+            "S14_walks_home_directory"} <= fired(result)
+
+
 def test_the_disguised_file_is_red_because_of_the_file():
     result = run_demo("trap_file_pdf")
     assert result["verdict"]["color"] == "red"
