@@ -111,6 +111,22 @@ def test_s14_leaves_project_walks_alone(path, text):
     assert status("S14", path, text) == "clear"
 
 
+@pytest.mark.parametrize("path, text", [
+    # Seen live on psf/requests: a test that checks the format of an address, near "import socket".
+    ("tests/test_utils.py", 'import socket\n\ndef test_ip():\n    assert is_ipv4_address("8.8.8.8")\n'),
+    ("src/net.py", 'import socket\nDEFAULT_DNS = "8.8.8.8"\n\ndef ping(host):\n    return socket.gethostbyname(host)\n'),
+], ids=["test-file", "constant-not-on-the-call-line"])
+def test_s13_needs_the_address_on_the_call(path, text):
+    assert status("S13", path, text) == "clear"
+
+
+def test_p8_ignores_file_names_that_look_like_domains():
+    from app.legitimacy.repo_config_domains import domains_in_config
+    ci = "- uses: coverallsapp/github-action@v2\n  with:\n    path-to-lcov: ./coverage/lcov.info\n"
+    assert domains_in_config({".github/workflows/ci.yml": ci}) == {}
+    assert domains_in_config({".env": "API=https://prices.example.info/v1"}) == {"example.info": ".env"}
+
+
 def test_s13_points_at_the_connection_not_at_a_comment():
     text = '"""Talks to 203.0.113.0/24 over a socket."""\nimport socket\n\nsocket.create_connection(("203.0.113.10", 8443))\n'
     ev = check_hardcoded_ip(from_dict({"c.py": text})).evidence[0].summary

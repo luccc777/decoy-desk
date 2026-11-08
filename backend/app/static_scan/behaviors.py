@@ -117,15 +117,25 @@ def _public_ip(text: str) -> Optional[tuple[str, int]]:
         if ip.is_loopback or ip.is_unspecified or ip.is_link_local or ip.is_multicast or ip.is_reserved \
                 or any(ip in net for net in _LOCAL_NETS):
             continue
-        window = text[max(0, m.start() - 300): m.end() + 300]
+        if text[max(0, m.start(1) - 3): m.start(1)] == "://":  # inside a URL: the call can be a few lines off
+            window = text[max(0, m.start() - 300): m.end() + 300]
+        else:  # a quoted address only counts on the same line as a network call
+            # Seen live: psf/requests tests have assert is_ipv4_address("8.8.8.8") near "socket".
+            start = text.rfind("\n", 0, m.start()) + 1
+            end = text.find("\n", m.end())
+            window = text[start: end if end >= 0 else len(text)]
         if _NET_WORDS.search(window):
             return str(ip), m.start(1)
     return None
 
 
+_TEST_PATH = re.compile(r"(?:^|/)(?:tests?|__tests__|spec|fixtures?)/|(?:^|/)test_[^/]*\.py$|_test\.py$"
+                        r"|\.(?:test|spec)\.[cm]?[jt]sx?$", re.IGNORECASE)
+
+
 def _ip_connections(path: str, text: str) -> list[Evidence]:
     found = _find(path, text, REMOTE_SHELL)
-    hit = _public_ip(text)
+    hit = None if _TEST_PATH.search(path) else _public_ip(text)  # tests are full of sample addresses
     if hit:
         ip, pos = hit
         found.append(Evidence(summary=f"a connection to the hard-coded address {ip} in {path}, "

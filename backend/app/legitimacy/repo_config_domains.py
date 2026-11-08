@@ -53,7 +53,9 @@ _CONFIG_NAMES = re.compile(
     re.IGNORECASE)
 _CONFIG_DIRS = {"config", "configs", "conf", "settings", "constants"}
 _HOST = re.compile(r"(?:https?|wss?)://([A-Za-z0-9.-]+\.[A-Za-z]{2,})|\b((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})\b")
-_SKIP_SUFFIXES = (".js", ".ts", ".json", ".md", ".py", ".lock", ".png", ".svg", ".css", ".html", ".yml", ".yaml")
+# Seen live: expressjs/express CI names coverage/lcov.info, and lcov.info was registered the day before.
+_SKIP_SUFFIXES = (".js", ".ts", ".json", ".md", ".py", ".lock", ".png", ".svg", ".css", ".html", ".yml", ".yaml",
+                  ".info", ".log", ".zip", ".map", ".sh", ".txt", ".gz", ".tgz", ".xml", ".csv", ".pdf")
 
 
 def is_config_file(path: str) -> bool:
