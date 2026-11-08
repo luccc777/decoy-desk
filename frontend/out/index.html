@@ -246,7 +246,7 @@ function showVerdict(snap) {
   box.innerHTML = `<p class="eyebrow">Verdict</p><h2>${LABEL[v.color]}</h2>
     <p class="lead">${esc(v.message)}</p>
     ${ex && ex.headline !== v.message ? `<p>${esc(ex.headline)}</p>` : ""}
-    ${ex ? `<ul>${(ex.bullets || []).map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+    ${ex && ex.source === "model" ? `<ul>${(ex.bullets || []).map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
     ${ex && ex.next_step ? `<p><strong>What to do now:</strong> ${esc(ex.next_step)}</p>` : ""}
     ${flags ? `<div class="flags">${flags}</div>` : ""}
     ${(v.unknown || []).length ? `<p class="unknown">Couldn't check: ${v.unknown.map((u) => esc(pretty(u))).join(", ")}</p>` : ""}
