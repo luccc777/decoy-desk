@@ -145,7 +145,10 @@ async def run_check(job: Job, sub: Submission, *, client: httpx.AsyncClient, now
             found.append(await repo_config_finding(client, files.texts, now))
             feed.add("static", found)
             job.emit("static", MODEL_NOTE)
-            feed.add("static", [await review_code(files, complete=complete)])
+            # Seen live: in a 75-file sample the model never got the flagged file. The rules' files go first.
+            flagged = tuple(p for p in files.texts
+                            if any(p in e.summary for f in found if f.status == "hit" for e in f.evidence))
+            feed.add("static", [await review_code(files, flagged=flagged, complete=complete)])
             result["repo"] = {"name": files.name, "files": len(files.sizes), "read": len(files.texts)}
             job.emit("static", f"Read {len(files.texts)} files", "done")
 

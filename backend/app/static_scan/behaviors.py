@@ -45,6 +45,16 @@ HIDDEN_SHELL = (
     ("bitsadmin used to download a file", _r(r"\bbitsadmin(?:\.exe)?\b[^\n]{0,80}/transfer\b")),
     ("mshta running a web page", _r(r"\bmshta(?:\.exe)?\b[^\n]{0,40}(?:https?://|javascript:|vbscript:)")),
     ("regsvr32 loading a remote script", _r(r"\bregsvr32(?:\.exe)?\b[^\n]{0,80}/i:\s*https?://")),
+    # Seen live on ike/cursor-task-hijack and upsurge0/assessment2: a folder-open task that decodes base64
+    # and pipes it into zsh or node. Only the model caught them before these patterns.
+    ("base64 decoded and piped into an interpreter",
+     _r(r"\bbase64\s+(?:-d|--decode|-D)\b[^|\n]{0,80}\|\s*(?:sudo\s+)?(?:(?:ba|z|da|k)?sh|node|python[23]?|perl|ruby|pwsh)\b")),
+    ("base64 decoded and handed to an interpreter",
+     _r(r"\b(?:node|python[23]?|perl|ruby|(?:ba|z)?sh)\s+-[ec]\s+\\?[\"']?\$\([^)\n]{0,240}base64\s+(?:-d|--decode|-D)\b")),
+    ("base64 decoded and run as code",
+     _r(r"(?:\beval|\bnew\s+function|\bexec)\s*\(\s*(?:buffer\.from|atob|base64\.b64decode"
+        r"|__import__\(\s*['\"]base64['\"]\s*\)\.b64decode)\s*\("
+        r"|frombase64string[^\n]{0,200}\b(?:iex|invoke-expression)\b|\b(?:iex|invoke-expression)\b[^\n]{0,200}frombase64string")),
 )
 
 SECRET_STORES = (
