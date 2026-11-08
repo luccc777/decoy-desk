@@ -34,6 +34,9 @@ REPO_CHECKS = ("S1_runs_on_folder_open", "S2_install_script", "S3_install_fetche
                "S4_obfuscated_code", "S5_hidden_urls", "S6_git_hooks", "S10_runs_downloaded_code",
                "P8_new_domains_in_repo_config")
 TEXT_CHECKS = ("S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code")
+# Files whose behavior only shows when they run. Until the decoy machine runs them, S4, S5 and
+# S10 stay unknown for these, so an honestly named program comes out yellow, never green.
+RUN_TO_JUDGE = frozenset({"executable", "shortcut", "disk_image", "unknown"})
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 
 
@@ -66,13 +69,15 @@ class _Feed:
 
 
 def _file_text_findings(upload: Upload, family: str) -> list[Finding]:
-    """S4, S5 and S10 for an upload: scan scripts and text, and leave binaries to the decoy machine."""
+    """S4, S5 and S10 for an upload: scan scripts and text; programs stay unknown until the decoy machine runs."""
     if family in ("script", "text"):
         text = upload.data.decode("utf-8", errors="replace")
         found = scan_repo(from_dict({upload.name: text}, name=upload.name))
         return [f for f in found if f.check in TEXT_CHECKS]
-    return [clear(c, "Not a script or source file; what it does is judged on the decoy machine")
-            for c in TEXT_CHECKS]
+    if family in RUN_TO_JUDGE:
+        return [unknown(c, "it's a program or a file we can't read, and only running it on the decoy machine "
+                           "shows what it does") for c in TEXT_CHECKS]
+    return [clear(c, "Not a script, a program or source code") for c in TEXT_CHECKS]
 
 
 async def _repo_files(job: Job, sub: Submission, client: httpx.AsyncClient,

@@ -6,6 +6,7 @@ including a real VBA project (MS-OVBA dir stream and compressed module source)
 that olevba parses as if Word had saved it. Nothing is mocked.
 """
 
+import asyncio
 import base64
 import builtins
 import gzip
@@ -18,11 +19,14 @@ import time
 import uuid
 import zipfile
 import zlib
+from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
 
+from app.pipeline import Upload, run_check
 from app.rules.engine import Finding, decide, load_table
+from app.schemas import Submission
 from app.static_scan import office
 from app.static_scan.file_scan import S7, S8, S9, FileKind, detect_type, scan_file
 
@@ -861,3 +865,32 @@ def test_real_pdf_is_green():
     verdict = decide(scan_file("report.pdf", TINY_PDF) + pipeline_findings(), {"file"})
     assert (verdict.color, verdict.reason) == ("green", "no_flags")
     assert verdict.fired == []
+
+
+# ---------------------------------------------------------------- end to end through the pipeline
+
+def run_upload(name: str, data: bytes) -> dict:
+    """The whole check for one uploaded file. Nothing here reaches the network or a model."""
+    async def no_model(**_):
+        raise RuntimeError("no model in tests")
+
+    job = SimpleNamespace(id="test", emit=lambda *args, **kwargs: None)
+    result = asyncio.run(run_check(job, Submission(), client=None, complete=no_model,
+                                   upload=Upload(name=name, data=data)))
+    return result["verdict"]
+
+
+@pytest.mark.parametrize("name, data", [
+    ("setup.exe", pe()), ("tool", ELF), ("app", MACHO_64), ("invite.lnk", LNK), ("data.bin", bytes(range(256)) * 4),
+], ids=["windows", "linux", "mac", "shortcut", "unknown-type"])
+def test_an_honestly_named_program_is_never_green(name, data):
+    """Only running a program shows what it does. Until the decoy machine runs, that's yellow, not green."""
+    verdict = run_upload(name, data)
+    assert (verdict["color"], verdict["reason"]) == ("yellow", "low_coverage"), verdict
+    assert set(verdict["unknown"]) == {"S4_obfuscated_code", "S5_hidden_urls", "S10_runs_downloaded_code"}
+
+
+@pytest.mark.parametrize("name, data", [("report.pdf", TINY_PDF), ("photo.png", png())])
+def test_a_real_document_through_the_pipeline_is_green(name, data):
+    verdict = run_upload(name, data)
+    assert (verdict["color"], verdict["reason"]) == ("green", "no_flags"), verdict
