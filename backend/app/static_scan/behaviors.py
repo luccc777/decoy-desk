@@ -51,7 +51,7 @@ HIDDEN_SHELL = (
      _r(r"\bbase64\s+(?:-d|--decode|-D)\b[^|\n]{0,80}\|\s*(?:sudo\s+)?(?:(?:ba|z|da|k)?sh|node|python[23]?|perl|ruby|pwsh)\b")),
     ("base64 decoded and handed to an interpreter",
      _r(r"\b(?:node|python[23]?|perl|ruby|(?:ba|z)?sh)\s+-[ec]\s+\\?[\"']?\$\([^)\n]{0,240}base64\s+(?:-d|--decode|-D)\b")),
-    # Seen live on upsurge0/assessment2: node -e "console.log(atob('...'))" | node, after 300 spaces.
+    # Seen live on upsurge0/assessment2: node -e "console.log(atob('...'))" | node, after 768 spaces.
     ("decoded output piped into an interpreter",
      _r(r"\b(?:node|python[23]?)\s+-[ec]\s+[^\n]{0,600}?(?:atob|b64decode|base64)[^\n]{0,600}?\|\s*"
         r"(?:node|python[23]?|(?:ba|z)?sh)\b")),
