@@ -1,0 +1,38 @@
+{
+ "company_name": "Stripe",
+ "company_website": "https://stripe.com",
+ "job_title": "Software Engineer, Backend",
+ "founded_year": 2010,
+ "years_in_business": 15,
+ "age_quote": "I'm on the recruiting team at Stripe.",
+ "signals": {
+  "fix_command": {
+   "present": true,
+   "quote": "I'm on the recruiting team at Stripe."
+  },
+  "pay_to_work": {
+   "present": false,
+   "quote": ""
+  },
+  "run_locally_or_rushed": {
+   "present": false,
+   "quote": ""
+  },
+  "platform_or_role_hop": {
+   "present": false,
+   "quote": ""
+  },
+  "work_computer_or_admin": {
+   "present": false,
+   "quote": ""
+  },
+  "too_good_to_be_true": {
+   "present": false,
+   "quote": ""
+  },
+  "known_contact_new_venture": {
+   "present": false,
+   "quote": ""
+  }
+ }
+}

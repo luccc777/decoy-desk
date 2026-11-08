@@ -1,0 +1,38 @@
+{
+ "company_name": "unknown",
+ "company_website": "unknown",
+ "job_title": "unknown",
+ "founded_year": null,
+ "years_in_business": null,
+ "age_quote": "",
+ "signals": {
+  "fix_command": {
+   "present": false,
+   "quote": ""
+  },
+  "pay_to_work": {
+   "present": false,
+   "quote": ""
+  },
+  "run_locally_or_rushed": {
+   "present": false,
+   "quote": ""
+  },
+  "platform_or_role_hop": {
+   "present": false,
+   "quote": ""
+  },
+  "work_computer_or_admin": {
+   "present": false,
+   "quote": ""
+  },
+  "too_good_to_be_true": {
+   "present": false,
+   "quote": ""
+  },
+  "known_contact_new_venture": {
+   "present": false,
+   "quote": ""
+  }
+ }
+}
