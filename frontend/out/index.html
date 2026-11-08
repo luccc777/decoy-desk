@@ -147,6 +147,7 @@ function showVerdict(snap) {
   const v = snap.result && snap.result.verdict;
   if (!v) { box.innerHTML = "<h2>Couldn't finish this check</h2><p class='muted'>Try again in a minute.</p>"; return; }
   box.classList.add(v.color);
+  $("#title").textContent = "How we checked";
   const ex = snap.result.explanation;  // filled by explain.py when it exists
   const flags = (v.fired || []).map((f) => {
     const ev = (f.evidence || []).map((e) =>
