@@ -17,7 +17,8 @@ HARD=(--rm "${BASE[@]}")
 check() { if [ "$2" = "0" ]; then echo "PASS  $1"; else echo "FAIL  $1"; fi; }
 
 # 1. The container runs on gVisor's kernel, not the VM's
-docker run --rm --runtime=runsc alpine dmesg 2>/dev/null | grep -qi gvisor
+# grep without -q reads the whole output: with pipefail, an early exit made docker fail on SIGPIPE now and then
+docker run --rm --runtime=runsc alpine dmesg 2>/dev/null | grep -i gvisor >/dev/null
 check "gVisor kernel (dmesg)" $?
 
 # 2. Hardened flags work together: /tmp is writable, the rest is not
