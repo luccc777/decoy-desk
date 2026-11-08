@@ -32,7 +32,7 @@ from app.static_scan.textutil import ext, is_bundle, is_source, line_number, sho
 
 CHECK = "A1_model_flags_code"
 CONFIRMED = "A2_model_confirmed_attack"
-TIMEOUT_S = 45
+TIMEOUT_S = 75          # per round; the reasoning model thinks before it answers
 MAX_ROUNDS = 3
 MAX_FIRST = 6           # files in the first round
 MAX_REQUEST = 4         # files the model may ask for per round

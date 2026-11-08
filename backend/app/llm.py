@@ -13,7 +13,9 @@ from typing import Optional
 from openai import AsyncOpenAI
 
 BASE_URL = "https://api.vultrinference.com/v1"
-EXTRACT_MODEL = "qwen3.8-flash-next"
+EXTRACT_MODEL = "qwen3.8-flash-next"   # a reasoning model: deep, slow (~8k tokens); investigates code
+# Seen live: qwen took 27-80 s on a conversation under load; glm-5.3-flash fills the same schema in 2-4 s.
+CLAIMS_MODEL = "glm-5.3-flash"
 EXPLAIN_MODEL = "glm-5.3-flash"
 FALLBACK_MODEL = "glm-5.3"
 GUARD_MODEL = "nemotron-3.5-content-safety"

@@ -178,6 +178,16 @@ def test_rule_patterns(signal, text):
     assert rule_quote(signal, text) == text
 
 
+@pytest.mark.parametrize("text, expected", [
+    ("Let us continue on Telegram @sarah_nexora.", True),
+    ("Please message me on WhatsApp so we can move faster.", True),
+    ("We use Slack and Zoom internally.", False),
+    ("Our office is next to the Telegraph building.", False),
+])
+def test_moving_to_a_chat_app_is_a_plain_rule(text, expected):
+    assert (rule_quote("platform_or_role_hop", text) is not None) is expected
+
+
 @pytest.mark.parametrize("text", [
     "We'll send you a laptop on your first day.",
     "Please send your resume and portfolio.",

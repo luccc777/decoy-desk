@@ -85,10 +85,9 @@ Everything runs on one Vultr VM. The API container is the only component with ke
 
 - **Cloud Compute:** Seattle, 4 vCPU / 8 GB, Ubuntu 24.04, Docker, gVisor (`runsc`), Caddy with automatic HTTPS.
 - **Serverless Inference:**
-  - `qwen3.8-flash-next` reads conversations;
-  - `glm-5.3` is the fallback;
-  - `glm-5.3-flash` explains verdicts.
-  - `qwen3.8-flash-next` also investigates code, and `glm-5.3` independently confirms what it finds.
+  - `glm-5.3-flash` reads conversations (about 3 s) and explains verdicts;
+  - `qwen3.8-flash-next`, a reasoning model, investigates code across files;
+  - `glm-5.3` independently confirms serious findings, and is the fallback for the others.
 
 ## Containment
 
@@ -116,7 +115,7 @@ Files go to `POST /api/checks/upload` (multipart: `file` plus a `submission` JSO
 ## Limitations
 
 - A company's other legitimate domains (for example `coinbase.cloud`) can be flagged as lookalikes of the main one.
-- Reading a conversation takes the model about 15–20 s. Live checks also depend on public APIs (RDAP, Wayback), which are sometimes slow or down. Then the verdict turns yellow for low coverage on purpose, rather than green.
+- Investigating a repo takes the models 30–75 s. Live checks also depend on public APIs (RDAP, Wayback), which are sometimes slow or down. Then the verdict turns yellow for low coverage on purpose, rather than green.
 - Some static checks can fire on legitimate projects:
   - a VS Code task that runs `tsc --watch` when the folder opens;
   - an install script that downloads, saves and then unpacks a file.

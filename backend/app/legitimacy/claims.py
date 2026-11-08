@@ -156,6 +156,9 @@ RULES: dict[str, list[tuple[str, ...]]] = {
     "pay_to_work": [(r"\b(you('ll| will)? need to|you must|you have to|please|kindly)\b",
                      r"\b(pay|deposit|transfer|send|buy|purchase)\b",
                      r"\b(fee|deposit|usdt|usdc|crypto|bitcoin|btc|eth|equipment|unlock|\$\s?\d+)")],
+    # Moving the talk to a chat app. Seen live: the fast model sometimes skips it, so a plain rule backs it up.
+    "platform_or_role_hop": [(r"\b(telegram|whatsapp|signal|discord|wechat|skype)\b",
+                              r"\b(continue|move|switch|talk|chat|contact|reach|message|text|add|ping|let'?s)\b")],
     "work_computer_or_admin": [
         (r"\b(use|on|from|with)\s+(your\s+)?(work|company|office|corporate)\s+(laptop|computer|machine|pc|device)\b",),
         (r"\b(disable|turn off|switch off|deactivate)\s+(your\s+)?(antivirus|anti-virus|defender|firewall|security)\b",),
@@ -280,7 +283,8 @@ async def extract_claims(text: str, *, now_year: int, complete: Optional[Complet
     complete = complete or llm.structured
     try:
         data = await asyncio.wait_for(complete(system=SYSTEM, user=f"<conversation>\n{text}\n</conversation>",
-                                               schema_name="conversation_claims", schema=SCHEMA),
+                                               schema_name="conversation_claims", schema=SCHEMA,
+                                               model=llm.CLAIMS_MODEL),
                                       timeout=CLAIMS_TIMEOUT_S)
     except (llm.LLMError, asyncio.TimeoutError):
         data = None
